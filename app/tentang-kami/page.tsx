@@ -228,13 +228,13 @@ export default function TentangKami() {
 
                 {/* ── 1. HERO ─────────────────────────────────────────────── */}
                 <div className="max-w-4xl text-center mb-20">
-                    <h4 className="mb-4 text-[12px] md:text-[16px] font-black uppercase tracking-[0.4em] text-orange-500 opacity-80">
+                    <h4 className="mb-4 text-[14px] md:text-[18px] font-black uppercase tracking-[0.4em] text-orange-500 opacity-80">
                         Profil Perusahaan
                     </h4>
                     <h1 className="mb-4 text-3xl font-bold uppercase tracking-tight md:text-5xl lg:text-[56px] leading-tight text-white">
                         PT Nusantara Star Connect (NSC)
                     </h1>
-                    <p className="mb-6 text-sm md:text-base text-gray-500 italic font-medium">
+                    <p className="mb-6 text-base md:text-base text-gray-500 italic font-medium">
                         "Empowering connectivity, bridging the gap, and bringing high-speed internet to every corner."
                     </p>
                     <div className="h-1.5 w-24 bg-orange-500 mx-auto mb-8 rounded-full shadow-[0_0_15px_rgba(249,115,22,0.5)]" />
@@ -255,7 +255,7 @@ export default function TentangKami() {
                 {/* ── 2. CORE VALUES ──────────────────────────────────────── */}
                 <div className="w-full max-w-6xl">
                     <div className="text-center mb-12">
-                        <h4 className="mb-3 text-[10px] md:text-[14px] font-black uppercase tracking-[0.4em] text-orange-500 opacity-80">
+                        <h4 className="mb-3 text-[14px] md:text-[16px] font-black uppercase tracking-[0.4em] text-orange-500 opacity-80">
                             Nilai Perusahaan
                         </h4>
                         <h2 className="text-2xl font-black uppercase tracking-tight md:text-3xl text-white">
@@ -266,10 +266,10 @@ export default function TentangKami() {
                     {/* STAR Group */}
                     <div className="mb-8">
                         <div className="flex items-center gap-3 mb-6">
-                            <span className="inline-flex items-center rounded-lg bg-orange-500 px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.3em] text-black shadow-[0_0_12px_rgba(249,115,22,0.35)]">
+                            <span className="inline-flex items-center rounded-lg bg-orange-500 px-4 py-1.5 text-[14px] font-black uppercase tracking-[0.3em] text-black shadow-[0_0_12px_rgba(249,115,22,0.35)]">
                                 ★ STAR Values
                             </span>
-                            <span className="text-[11px] text-gray-600 uppercase tracking-wider font-semibold">
+                            <span className="text-[14px] text-gray-600 uppercase tracking-wider font-semibold">
                                 Nilai Karakter
                             </span>
                         </div>
@@ -287,10 +287,10 @@ export default function TentangKami() {
                                         <div className="mb-1.5 text-orange-500 group-hover:text-black transition-colors">
                                             {item.icon}
                                         </div>
-                                        <h3 className="mb-1 text-xs font-black uppercase tracking-wider text-white group-hover:text-black transition-colors">
+                                        <h3 className="mb-1 text-md font-black uppercase tracking-wider text-white group-hover:text-black transition-colors">
                                             {item.title}
                                         </h3>
-                                        <p className="text-[11px] text-gray-500 leading-relaxed font-medium group-hover:text-black/80 transition-colors">
+                                        <p className="text-[14px] text-gray-500 leading-relaxed font-medium group-hover:text-black/80 transition-colors">
                                             {item.desc}
                                         </p>
                                     </div>
@@ -302,10 +302,10 @@ export default function TentangKami() {
                     {/* RPM Group */}
                     <div>
                         <div className="flex items-center gap-3 mb-6">
-                            <span className="inline-flex items-center rounded-lg border border-orange-500/50 px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.3em] text-orange-500">
+                            <span className="inline-flex items-center rounded-lg border border-orange-500/50 px-4 py-1.5 text-[14px] font-black uppercase tracking-[0.3em] text-orange-500">
                                 ⚙ RPM Values
                             </span>
-                            <span className="text-[11px] text-gray-600 uppercase tracking-wider font-semibold">
+                            <span className="text-[14px] text-gray-600 uppercase tracking-wider font-semibold">
                                 Nilai Operasional
                             </span>
                         </div>
@@ -322,10 +322,10 @@ export default function TentangKami() {
                                         <div className="mb-1.5 text-orange-500 group-hover:text-black transition-colors">
                                             {item.icon}
                                         </div>
-                                        <h3 className="mb-1 text-xs font-black uppercase tracking-wider text-white group-hover:text-black transition-colors">
+                                        <h3 className="mb-1 text-md font-black uppercase tracking-wider text-white group-hover:text-black transition-colors">
                                             {item.title}
                                         </h3>
-                                        <p className="text-[11px] text-gray-500 leading-relaxed font-medium group-hover:text-black/80 transition-colors">
+                                        <p className="text-[14px] text-gray-500 leading-relaxed font-medium group-hover:text-black/80 transition-colors">
                                             {item.desc}
                                         </p>
                                     </div>
@@ -338,7 +338,7 @@ export default function TentangKami() {
                 {/* ── 3. MENGAPA MEMILIH NSC? ─────────────────────────────── */}
                 <div className="mt-24 w-full max-w-6xl">
                     <div className="text-center mb-12">
-                        <h4 className="mb-3 text-[10px] md:text-[14px] font-black uppercase tracking-[0.4em] text-orange-500 opacity-80">
+                        <h4 className="mb-3 text-[14px] md:text-[16px] font-black uppercase tracking-[0.4em] text-orange-500 opacity-80">
                             Keunggulan Kami
                         </h4>
                         <h2 className="text-2xl font-black uppercase tracking-tight md:text-3xl text-white">
@@ -354,10 +354,10 @@ export default function TentangKami() {
                                 <div className="mb-3 text-orange-500 group-hover:text-black transition-colors">
                                     {item.icon}
                                 </div>
-                                <h3 className="mb-2 text-[11px] md:text-xs font-black uppercase tracking-wider text-white group-hover:text-black transition-colors">
+                                <h3 className="mb-2 text-[14px] md:text-md font-black uppercase tracking-wider text-white group-hover:text-black transition-colors">
                                     {item.title}
                                 </h3>
-                                <p className="text-[11px] text-gray-500 leading-relaxed font-medium group-hover:text-black/80 transition-colors">
+                                <p className="text-[14px] text-gray-500 leading-relaxed font-medium group-hover:text-black/80 transition-colors">
                                     {item.desc}
                                 </p>
                             </div>
@@ -411,7 +411,7 @@ export default function TentangKami() {
                 {/* ── 5. PROYEK & PENCAPAIAN ──────────────────────────────── */}
                 <div className="mt-24 w-full max-w-6xl">
                     <div className="text-center mb-12">
-                        <h4 className="mb-3 text-[10px] md:text-[14px] font-black uppercase tracking-[0.4em] text-orange-500 opacity-80">
+                        <h4 className="mb-3 text-[14px] md:text-[16px] font-black uppercase tracking-[0.4em] text-orange-500 opacity-80">
                             Track Record
                         </h4>
                         <h2 className="text-2xl font-black uppercase tracking-tight md:text-3xl text-white">
@@ -428,10 +428,10 @@ export default function TentangKami() {
                                 <div className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-orange-500/10 text-orange-500 group-hover:bg-orange-500/20 transition-colors">
                                     {item.icon}
                                 </div>
-                                <h3 className="mb-3 text-sm font-black uppercase tracking-wider text-white">
+                                <h3 className="mb-3 text-md font-black uppercase tracking-wider text-white">
                                     {item.sector}
                                 </h3>
-                                <p className="text-[12px] text-gray-500 leading-relaxed font-medium">
+                                <p className="text-[14px] text-gray-500 leading-relaxed font-medium">
                                     {item.desc}
                                 </p>
                             </div>
@@ -442,8 +442,8 @@ export default function TentangKami() {
                 {/* ── 6. BOARD OF DIRECTORS ──────────────────────────────── */}
                 <div className="mt-24 w-full max-w-6xl">
                     <div className="text-center mb-12">
-                        <h4 className="mb-3 text-[10px] md:text-[14px] font-black uppercase tracking-[0.4em] text-orange-500 opacity-80">
-                            Pengurus Perusahaan
+                        <h4 className="mb-3 text-[14px] md:text-[16px] font-black uppercase tracking-[0.4em] text-orange-500 opacity-80">
+                            Manajemen
                         </h4>
                         <h2 className="text-2xl font-black uppercase tracking-tight md:text-3xl text-white">
                             Board of Directors
@@ -465,63 +465,14 @@ export default function TentangKami() {
                                         className="object-cover w-full h-full"
                                     />
                                 </div>
-                                <h3 className="mb-1 text-sm font-black text-white leading-tight">
+                                <h3 className="mb-1 text-md font-black text-white leading-tight">
                                     {person.name}
                                 </h3>
-                                <p className="text-[11px] text-orange-500/80 font-semibold uppercase tracking-wider leading-tight">
+                                <p className="text-[12px] text-orange-500/80 font-semibold uppercase tracking-wider leading-tight">
                                     {person.title}
                                 </p>
                             </div>
                         ))}
-                    </div>
-                </div>
-
-                {/* ── 7. LEGALITAS ────────────────────────────────────────── */}
-                <div className="mt-24 w-full max-w-6xl">
-                    <div className="text-center mb-12">
-                        <h4 className="mb-3 text-[10px] md:text-[14px] font-black uppercase tracking-[0.4em] text-orange-500 opacity-80">
-                            Legalitas Perusahaan
-                        </h4>
-                        <h2 className="text-2xl font-black uppercase tracking-tight md:text-3xl text-white">
-                            Data Perusahaan
-                        </h2>
-                    </div>
-                    <div className="rounded-[32px] border border-white/10 bg-[#111111] p-8 lg:p-12 relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-48 h-48 bg-orange-500/5 blur-[80px] rounded-full pointer-events-none" />
-                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 relative z-10">
-                            {legalData.map((item, idx) => (
-                                <div key={idx} className="flex items-start gap-4">
-                                    <div className="flex-shrink-0 mt-0.5 flex h-9 w-9 items-center justify-center rounded-xl bg-orange-500/10 text-orange-500">
-                                        {item.icon}
-                                    </div>
-                                    <div>
-                                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-600 mb-1">
-                                            {item.label}
-                                        </p>
-                                        <p className="text-sm text-gray-300 font-medium leading-relaxed">
-                                            {item.value}
-                                        </p>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                        {/* Izin Usaha */}
-                        <div className="mt-8 pt-8 border-t border-white/5 relative z-10">
-                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-600 mb-4">
-                                Izin Usaha
-                            </p>
-                            <div className="flex flex-wrap gap-3">
-                                <span className="inline-flex items-center gap-2 rounded-lg border border-orange-500/30 bg-orange-500/10 px-4 py-2 text-[11px] font-black uppercase tracking-wider text-orange-500">
-                                    <CheckCircle2 className="w-3.5 h-3.5" /> Jartup VSAT
-                                </span>
-                                <span className="inline-flex items-center gap-2 rounded-lg border border-orange-500/30 bg-orange-500/10 px-4 py-2 text-[11px] font-black uppercase tracking-wider text-orange-500">
-                                    <CheckCircle2 className="w-3.5 h-3.5" /> Internet Service Provider (ISP)
-                                </span>
-                                <span className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-[11px] font-semibold text-gray-500">
-                                    NIB: 0606230036475
-                                </span>
-                            </div>
-                        </div>
                     </div>
                 </div>
 

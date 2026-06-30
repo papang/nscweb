@@ -110,7 +110,7 @@ export default function SimpleNews() {
         
         {/* Header & Search */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-6">
-          <h1 className="text-4xl font-bold tracking-tight text-white">Berita & <span className="text-orange-500">Update</span></h1>
+          <h1 className="text-4xl font-bold tracking-tight text-white">Berita & <span className="text-orange-500">Insight</span></h1>
           <div className="relative w-full md:w-64">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
             <input 
@@ -127,13 +127,13 @@ export default function SimpleNews() {
             onClick={() => setActiveTab("nsc")}
             className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${activeTab === "nsc" ? "bg-orange-500 text-black shadow-[0_0_10px_rgba(249,115,22,0.3)]" : "text-gray-500 hover:text-white"}`}
           >
-            Berita Resmi NSC
+            Berita
           </button>
           <button 
             onClick={() => setActiveTab("feed")}
             className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${activeTab === "feed" ? "bg-orange-500 text-black shadow-[0_0_10px_rgba(249,115,22,0.3)]" : "text-gray-500 hover:text-white"}`}
           >
-            <Rss size={14} className={activeTab === "feed" ? "text-black" : "text-gray-500"} /> Industry Feed
+            <Rss size={14} className={activeTab === "feed" ? "text-black" : "text-gray-500"} />Feed
           </button>
         </div>
 

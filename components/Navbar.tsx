@@ -42,8 +42,8 @@ export default function Navbar() {
     { name: "Our Gallery", href: "/gallery" },
     // { name: "Portal Customer", href: "/customer" },
     // { name: "Portal Reseller", href: "/reseller" },
-    { name: "Tentang Kami", href: "/tentang-kami" },
     { name: "Karir", href: "/career" },
+    { name: "Tentang Kami", href: "/tentang-kami" },
     { name: "Hubungi Kami", href: "/hubungi-kami" },
     // { name: "Formulir", href: "/formulir" },
   ]

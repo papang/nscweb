@@ -28,28 +28,28 @@ const CoverageMap = dynamic(() => import("@/components/CoverageMap"), {
 const akastarSolutions = [
   {
     icon: faSatellite, // Ikon Satelit untuk Connectivity
-    title: "Akastar Connectivity Engine (LEO, GEO & Access Last Mile)",
+    title: "Akastar Connectivity (LEO, GEO & Access Last Mile)",
     desc: "Fondasi konektivitas hibrida cerdas yang memadukan latensi ultra-rendah satelit LEO dan keandalan satelit GEO. Dari langit, data didistribusikan langsung ke titik akhir pengguna melalui solusi Access Last Mile yang adaptif—baik menggunakan media kabel (Wired) maupun nirkabel (Wireless) sesuai kebutuhan lapangan yang menantang.",
   },
   {
+    icon: faShieldHalved, // Ikon Perisai untuk Secure
+    title: "Akastar Secure (Comprehensive Cyber Security - Optional Bundling)",
+    desc: "Perlindungan mutakhir untuk aset digital Anda. Menyediakan opsi proteksi tambahan (optional bundling) berupa enkripsi berlapis, arsitektur Zero Trust, pertahanan anti-jamming, serta deteksi ancaman real-time guna menjamin kedaulatan data korporat yang membutuhkan keamanan ekstra tinggi",
+  },
+  {
     icon: faHouse,
-    title: "Akastar Home FTTH Network (High-Speed Fiber Optic)",
+    title: "Akastar Home (FTTH Network, High-Speed Fiber Optic)",
     desc: "Menghadirkan keunggulan infrastruktur darat murni melalui teknologi FTTH (Fiber to the Home). Jaringan kabel optik berkecepatan tinggi yang stabil, simetris, dan tahan cuaca untuk memenuhi segala kebutuhan digital keluarga, mulai dari work from home, online streaming, gaming, hingga pemenuhan gaya hidup modern.",
   },
   {
     icon: faTv, // Ikon TV untuk Content
-    title: "Akastar Content & Platform (Commercial IPTV & App Bundling)",
+    title: "Akastar Bundling (Commercial IPTV & App Bundling)",
     desc: "Kami memastikan infrastruktur bisnis Anda bekerja maksimal. Sebagai bagian dari ekosistem Akastar, kami menyertakan platform IPTV Interaktif komersial, layanan siaran langsung, Video on Demand (VoD), serta aplikasi manajemen operasional yang siap pakai untuk menunjang kebutuhan korporat Anda.",
   },
   {
     icon: faRobot, // Ikon Robot untuk Intelligence
     title: "Akastar Intelligence System (Advanced IoT & Disaster Detection)",
     desc: "Otomatisasi cerdas untuk efisiensi dan keselamatan total. Mengintegrasikan sensor pintar untuk operasional industri hingga sistem IoT deteksi bencana alam dini. Didukung oleh sensor suhu, panas, dan kecepatan angin yang mengirimkan data taktis secara real-time melalui jaringan satelit tangguh Akastar.",
-  },
-  {
-    icon: faShieldHalved, // Ikon Perisai untuk Secure
-    title: "Akastar Secure (Comprehensive Cyber Security - Optional Bundling)",
-    desc: "Perlindungan mutakhir untuk aset digital Anda. Menyediakan opsi proteksi tambahan (optional bundling) berupa enkripsi berlapis, arsitektur Zero Trust, pertahanan anti-jamming, serta deteksi ancaman real-time guna menjamin kedaulatan data korporat yang membutuhkan keamanan ekstra tinggi",
   },
 ];
 
@@ -98,12 +98,12 @@ export default function Home() {
 
           {/* Button Section */}
           <div className="flex flex-row gap-4">
-            <button className="rounded-lg bg-white px-8 py-3 font-semibold text-blue-900 transition hover:bg-gray-200">
+            <Link href="/product" className="rounded-lg bg-white px-8 py-3 font-semibold text-blue-900 transition hover:bg-gray-200">
               Rancang Solusi Bersama
-            </button>
-            <button className="rounded-lg border-2 border-white px-8 py-3 font-semibold text-white transition hover:bg-white hover:text-black">
+            </Link>
+            <Link href="/hubungi-kami" className="rounded-lg border-2 border-white px-8 py-3 font-semibold text-white transition hover:bg-white hover:text-black">
               Konsultasi Arsitek Jaringan
-            </button>
+            </Link>
           </div>
         </div>
 
@@ -151,7 +151,7 @@ export default function Home() {
                   {item.title}
                 </h2>
 
-                <p className="text-sm text-gray-300 leading-relaxed font-light">
+                <p className="text-md text-gray-300 leading-relaxed font-light">
                   {item.desc}
                 </p>
 
