@@ -1,0 +1,334 @@
+"use client";
+
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
+import { 
+  Search, 
+  Clock, 
+  ChevronRight, 
+  ExternalLink, 
+  Rss, 
+  Globe, 
+  Briefcase, 
+  Newspaper 
+} from "lucide-react";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import Link from "next/link";
+
+// --- DATA DUMMY INTERNAL NSC ---
+const latestNews = [
+  { id: 1, cat: "Update", title: "NSC Luncurkan Satelit LEO Terbaru di Orbit Indonesia", time: "2 Jam", img: "/particle7.webp" },
+  { id: 2, cat: "Tech", title: "Cara Optimalkan Latensi Internet Satelit untuk Gaming", time: "5 Jam", img: "/particle8.webp" },
+  { id: 3, cat: "Event", title: "Rekap Workshop Digitalisasi Desa Bersama NSC", time: "1 Hari", img: "/particle9.webp" },
+];
+
+const categoryNews = [
+  { id: 10, cat: "Teknologi", title: "Implementasi AI dalam Monitoring Jaringan Satelit", time: "2 Hari" },
+  { id: 11, cat: "Satelit", title: "Peluncuran Terminal Flat-Panel Generasi Kedua", time: "3 Hari" },
+  { id: 12, cat: "Bisnis", title: "NSC Jalin Kerja Sama Strategis dengan Provider Lokal", time: "4 Hari" },
+  { id: 13, cat: "Tutorial", title: "Cara Setting Router NSC untuk Kecepatan Maksimal", time: "5 Hari" },
+];
+
+const categories = ['Teknologi', 'Satelit', 'Bisnis', 'Tutorial'];
+
+// --- DATA DUMMY EXTERNAL NEWS FEED ---
+const externalFeeds = [
+  { 
+    id: 101, 
+    source: "Kompas.com", 
+    sourceIcon: <Newspaper size={14} />, 
+    title: "Pemerintah Targetkan Seluruh Desa Terkoneksi Internet Satelit di 2027", 
+    excerpt: "Kementerian Kominfo menggenjot pemerataan akses internet di daerah 3T menggunakan konstelasi satelit LEO untuk percepatan digitalisasi nasional.", 
+    time: "3 Jam lalu", 
+    url: "https://www.kompas.com/tekno", 
+    img: "/particle2.webp" 
+  },
+  { 
+    id: 102, 
+    source: "LinkedIn", 
+    sourceIcon: <Briefcase size={14} />, 
+    title: "Syal Pratama membagikan pemikiran tentang masa depan LEO di Indonesia.", 
+    excerpt: "\"Infrastruktur fiber optik memang kuat, namun untuk topografi Indonesia yang berpulau, satelit LEO adalah jawaban paling logis dan efisien saat ini.\"", 
+    time: "5 Jam lalu", 
+    url: "https://www.linkedin.com/feed", 
+    img: null // Contoh postingan tanpa gambar besar
+  },
+  { 
+    id: 103, 
+    source: "Tech in Asia", 
+    sourceIcon: <Globe size={14} />, 
+    title: "Startup Telekomunikasi Satelit Asia Tenggara Catat Pendanaan Rekor", 
+    excerpt: "Tren investasi di sektor space-tech dan telekomunikasi satelit melonjak tajam seiring meningkatnya permintaan konektivitas B2B di wilayah rural.", 
+    time: "1 Hari lalu", 
+    url: "#", 
+    img: "/statis.webp" 
+  },
+  { 
+    id: 104, 
+    source: "DetikNet", 
+    sourceIcon: <Newspaper size={14} />, 
+    title: "Mengenal Perbedaan Satelit LEO, MEO, dan GEO untuk Kebutuhan Internet", 
+    excerpt: "Banyak yang belum tahu, ini alasan mengapa satelit LEO (Low Earth Orbit) memberikan latensi yang jauh lebih cepat untuk bermain game dan video call.", 
+    time: "2 Hari lalu", 
+    url: "#", 
+    img: "/particle1.webp" 
+  },
+];
+
+const getDomainLogo = (url: string) => {
+  if (!url || url === "#") return null;
+  try {
+    const domain = new URL(url).hostname;
+    return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+  } catch (error) {
+    return null;
+  }
+};
+
+export default function SimpleNews() {
+  // State untuk Tab Navigasi & Kategori Internal
+  const [activeTab, setActiveTab] = useState<"nsc" | "feed">("nsc");
+  const [activeCategory, setActiveCategory] = useState('Teknologi');
+  
+  const filteredNews = categoryNews.filter(item => item.cat === activeCategory);
+
+  return (
+    <main className="relative min-h-screen bg-black text-gray-200 selection:bg-orange-500/30 overflow-hidden font-sans">
+      
+      {/* Efek Pendaran Cahaya (Glow Effects) */}
+      <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden z-0">
+        <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-orange-600/20 blur-[120px] rounded-full" />
+        <div className="absolute bottom-[20%] left-[-5%] w-[400px] h-[400px] bg-amber-500/10 blur-[100px] rounded-full" />
+        <div className="absolute top-[40%] left-[30%] w-[600px] h-[600px] bg-orange-500/5 blur-[150px] rounded-full" />
+      </div>
+
+      <Navbar />
+      
+      <div className="relative z-10 container mx-auto px-6 pt-32 pb-20 max-w-6xl">
+        
+        {/* Header & Search */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-6">
+          <h1 className="text-4xl font-bold tracking-tight text-white">Berita & <span className="text-orange-500">Update</span></h1>
+          <div className="relative w-full md:w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
+            <input 
+              type="text" 
+              placeholder="Cari berita..." 
+              className="w-full bg-[#111111] border border-white/10 rounded-full py-2 pl-10 pr-4 text-sm outline-none focus:border-orange-500 focus:bg-[#1a1a1a] transition-all text-white placeholder-gray-500"
+            />
+          </div>
+        </div>
+
+        {/* --- TAB SWITCHER (NSC vs FEED) --- */}
+        <div className="flex mb-12 p-1.5 bg-[#111111] border border-white/10 rounded-2xl w-fit backdrop-blur-xl shadow-lg">
+          <button 
+            onClick={() => setActiveTab("nsc")}
+            className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${activeTab === "nsc" ? "bg-orange-500 text-black shadow-[0_0_10px_rgba(249,115,22,0.3)]" : "text-gray-500 hover:text-white"}`}
+          >
+            Berita Resmi NSC
+          </button>
+          <button 
+            onClick={() => setActiveTab("feed")}
+            className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${activeTab === "feed" ? "bg-orange-500 text-black shadow-[0_0_10px_rgba(249,115,22,0.3)]" : "text-gray-500 hover:text-white"}`}
+          >
+            <Rss size={14} className={activeTab === "feed" ? "text-black" : "text-gray-500"} /> Industry Feed
+          </button>
+        </div>
+
+        <AnimatePresence mode="wait">
+          {activeTab === "nsc" ? (
+            /* =========================================
+               TAB 1: BERITA RESMI INTERNAL NSC
+               ========================================= */
+            <motion.div
+              key="nsc-news"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+              className="grid grid-cols-1 lg:grid-cols-3 gap-12"
+            >
+              {/* KOLOM KIRI (Berita Utama & List) */}
+              <div className="lg:col-span-2 space-y-8">
+                <Link href="/berita/detail/teknologi-beamforming" className="block">
+                  <motion.div className="group cursor-pointer">
+                    <div className="relative aspect-video rounded-3xl overflow-hidden mb-6 border border-white/10 shadow-2xl">
+                      <Image 
+                        src="/particle9.webp" 
+                        alt="Main" 
+                        fill 
+                        className="object-cover group-hover:scale-105 transition-transform duration-500" 
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+                      <div className="absolute bottom-6 left-6 right-6">
+                        <span className="bg-orange-500 px-3 py-1 rounded-md text-[10px] font-black text-black uppercase mb-3 inline-block shadow-[0_0_15px_rgba(249,115,22,0.4)]">
+                          Sorotan
+                        </span>
+                        <h2 className="text-2xl md:text-3xl font-bold leading-tight text-white group-hover:text-orange-400 transition-colors">
+                          Teknologi Beamforming: Masa Depan Internet Tanpa Lag
+                        </h2>
+                      </div>
+                    </div>
+                  </motion.div>
+                </Link>
+
+                <div className="space-y-6">
+                  <h3 className="text-sm font-black uppercase tracking-widest text-gray-500 border-b border-white/10 pb-2">Update Terkini</h3>
+                  {latestNews.map((item) => (
+                    <Link 
+                      key={item.id} 
+                      href={`/berita/detail/${item.title.toLowerCase().replace(/ /g, "-")}`}
+                      className="block"
+                    >
+                      <div className="flex gap-5 p-3 rounded-2xl bg-[#111111]/80 border border-white/5 hover:bg-[#1a1a1a] hover:border-orange-500/50 transition-all cursor-pointer group items-center backdrop-blur-sm">
+                        <div className="relative h-20 w-20 md:h-24 md:w-32 flex-shrink-0 overflow-hidden rounded-xl border border-white/10">
+                          <Image src={item.img} alt={item.title} fill className="object-cover group-hover:scale-110 transition-transform duration-500" />
+                        </div>
+                        <div className="flex-grow">
+                          <div className="flex items-center gap-3 mb-1">
+                            <span className="text-orange-500 text-[10px] font-bold uppercase tracking-wider">{item.cat}</span>
+                            <span className="text-gray-500 text-[10px] flex items-center gap-1 font-medium"><Clock size={10}/> {item.time}</span>
+                          </div>
+                          <h3 className="font-bold text-base md:text-lg leading-tight text-gray-200 group-hover:text-orange-400 transition-colors">{item.title}</h3>
+                        </div>
+                        <ChevronRight className="hidden md:block text-gray-600 group-hover:text-orange-500 transition-colors mr-2" />
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+
+              {/* KOLOM KANAN (Kategori & Populer) */}
+              <div className="space-y-12">
+                <section className="bg-[#111111] p-6 rounded-[32px] border border-white/10 shadow-2xl backdrop-blur-md">
+                  <h3 className="text-lg font-bold text-white border-b border-white/10 pb-4 mb-6">Paling Populer</h3>
+                  <div className="space-y-6">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="flex gap-4 cursor-pointer group">
+                        <span className="text-2xl font-black text-gray-700 group-hover:text-orange-500 transition-colors">0{i}</span>
+                        <p className="text-sm font-medium leading-snug text-gray-400 group-hover:text-orange-400 transition-colors">Bagaimana satelit LEO bekerja di cuaca ekstrem?</p>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+
+                <section className="bg-[#111111] p-6 rounded-[32px] border border-white/10 shadow-2xl backdrop-blur-md">
+                  <h3 className="text-lg font-bold text-white mb-6">Kategori</h3>
+                  <div className="flex flex-wrap gap-2 mb-8">
+                    {categories.map((c) => (
+                      <button 
+                        key={c}
+                        onClick={() => setActiveCategory(c)}
+                        className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all border ${
+                          activeCategory === c 
+                          ? "bg-orange-500 text-black border-orange-500 shadow-[0_0_15px_rgba(249,115,22,0.3)]" 
+                          : "bg-white/5 text-gray-400 border-white/10 hover:bg-white/10"
+                        }`}
+                      >
+                        {c}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="space-y-4">
+                    <AnimatePresence mode="wait">
+                      <motion.div
+                        key={activeCategory}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.2 }}
+                        className="space-y-4"
+                      >
+                        {filteredNews.map((item) => (
+                          <div key={item.id} className="group cursor-pointer pb-3 border-b border-white/10 last:border-0 hover:pl-1 transition-all">
+                            <p className="text-gray-500 font-medium text-[10px] mb-1">{item.time} lalu</p>
+                            <h4 className="text-sm font-bold text-gray-300 leading-tight group-hover:text-orange-400 transition-colors">
+                              {item.title}
+                            </h4>
+                          </div>
+                        ))}
+                      </motion.div>
+                    </AnimatePresence>
+                  </div>
+                </section>
+              </div>
+            </motion.div>
+          ) : (
+            /* =========================================
+               TAB 2: INDUSTRY NEWS FEED (EXTERNAL)
+               ========================================= */
+          <motion.div
+            key="feed-news"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
+            {externalFeeds.map((feed) => {
+              // Memanggil fungsi penarik logo otomatis
+              const logoUrl = getDomainLogo(feed.url);
+
+              return (
+                <a 
+                  key={feed.id} 
+                  href={feed.url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="group flex flex-col bg-[#111111] border border-white/10 rounded-[32px] overflow-hidden hover:border-orange-500/50 hover:shadow-[0_0_20px_rgba(249,115,22,0.1)] transition-all duration-300 cursor-pointer"
+                >
+                  {/* Foto Feed (Jika ada) */}
+                  {feed.img && (
+                    <div className="relative h-48 w-full border-b border-white/10 overflow-hidden">
+                      <Image src={feed.img} alt={feed.source} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
+                      <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors" />
+                    </div>
+                  )}
+
+                  <div className="p-6 flex flex-col flex-grow">
+                    {/* Source & Time */}
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-2 text-orange-500 bg-orange-500/10 border border-orange-500/20 px-3 py-1.5 rounded-lg">
+                        {/* LOGO OTOMATIS */}
+                        {logoUrl ? (
+                          <div className="relative w-4 h-4 bg-white rounded-full overflow-hidden flex items-center justify-center p-0.5">
+                            <img src={logoUrl} alt={feed.source} className="w-full h-full object-contain" />
+                          </div>
+                        ) : (
+                          <Globe size={14} /> // Fallback icon jika gagal
+                        )}
+                        <span className="text-[10px] font-black uppercase tracking-widest">{feed.source}</span>
+                      </div>
+                      <span className="text-gray-500 text-[10px] font-medium flex items-center gap-1">
+                        <Clock size={10} /> {feed.time}
+                      </span>
+                    </div>
+
+                    {/* Title & Excerpt */}
+                    <h3 className="text-lg font-bold text-white mb-2 leading-snug group-hover:text-orange-400 transition-colors">
+                      {feed.title}
+                    </h3>
+                    <p className="text-sm text-gray-400 font-medium leading-relaxed mb-6 line-clamp-3">
+                      {feed.excerpt}
+                    </p>
+
+                    {/* External Link Indicator */}
+                    <div className="mt-auto pt-4 border-t border-white/10 flex items-center justify-between text-gray-500 group-hover:text-orange-500 transition-colors">
+                      <span className="text-[11px] font-bold uppercase tracking-widest">Baca Sumber</span>
+                      <ExternalLink size={16} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                    </div>
+                  </div>
+                </a>
+              );
+            })}
+          </motion.div>
+          )}
+        </AnimatePresence>
+
+      </div>
+      <Footer />
+    </main>
+  );
+}
