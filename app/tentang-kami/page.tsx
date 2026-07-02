@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import Link from "next/link";
 
 // ── Data ────────────────────────────────────────────────────────────────────
 
@@ -482,82 +483,19 @@ export default function TentangKami() {
                         <h4 className="mb-3 text-[10px] md:text-[14px] font-black uppercase tracking-[0.4em] text-orange-500 opacity-80">
                             Ekosistem Bisnis
                         </h4>
-                        <h2 className="text-2xl font-black uppercase tracking-tight md:text-3xl text-white">
+                        <Link href="/partner" className="text-2xl font-black uppercase tracking-tight md:text-3xl text-white cursor-pointer hover:text-orange-500 transition-colors">
                             Klien &amp; Mitra Kami
-                        </h2>
+                        </Link>
                         <p className="mt-4 text-sm text-gray-500 font-medium max-w-xl mx-auto">
                             Dipercaya oleh perusahaan-perusahaan terkemuka dari berbagai sektor industri di Indonesia.
                         </p>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-
-                        {/* Our Partnership */}
-                        <div className="rounded-[28px] border border-white/10 bg-[#111111] p-6 lg:p-10">
-                            <p className="text-center text-[11px] font-black uppercase tracking-[0.3em] text-gray-600 mb-6">
-                                Our Partnership
-                            </p>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                                {[
-                                    { name: "Telkomsat",                file: "telkomsat" },
-                                    { name: "MTM",                      file: "mtm" },
-                                    { name: "MikroTik",                 file: "mikrotik" },
-                                    { name: "Terang Sinergi Nusantara", file: "tsn" },
-                                    { name: "RBN",                      file: "rbn" },
-                                    { name: "APJII",                    file: "apjii" },
-                                    { name: "Peplink",                  file: "peplink" },
-                                    { name: "HSP",                      file: "hsp" },
-                                    { name: "Mastersystem",             file: "mastersystem" },
-                                    { name: "Arthanet",                 file: "arthanet" },
-                                    { name: "Matrix",                   file: "matrix" },
-                                ].map((item, idx) => (
-                                    <div
-                                        key={idx}
-                                        className="group flex items-center justify-center rounded-2xl bg-white transition-all duration-300 hover:scale-105 hover:shadow-[0_0_20px_rgba(249,115,22,0.4)] hover:ring-2 hover:ring-orange-500/50 p-3 aspect-[3/2]"
-                                    >
-                                        <Image
-                                            src={`/partners/${item.file}.png`}
-                                            alt={item.name}
-                                            width={120}
-                                            height={60}
-                                            className="object-contain w-full h-full"
-                                        />
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Our Clients */}
-                        <div className="rounded-[28px] border border-white/10 bg-[#111111] p-6 lg:p-10">
-                            <p className="text-center text-[11px] font-black uppercase tracking-[0.3em] text-gray-600 mb-6">
-                                Our Clients
-                            </p>
-                            <div className="grid grid-cols-2 gap-4">
-                                {[
-                                    { name: "Telkomsel", file: "telkomsel" },
-                                    { name: "PT Pelni",  file: "pelni" },
-                                ].map((item, idx) => (
-                                    <div
-                                        key={idx}
-                                        className="group flex items-center justify-center rounded-2xl bg-white transition-all duration-300 hover:scale-105 hover:shadow-[0_0_20px_rgba(249,115,22,0.4)] hover:ring-2 hover:ring-orange-500/50 p-5 aspect-[3/2]"
-                                    >
-                                        <Image
-                                            src={`/partners/${item.file}.png`}
-                                            alt={item.name}
-                                            width={180}
-                                            height={90}
-                                            className="object-contain w-full h-full"
-                                        />
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                    </div>
+                    
                 </div>
 
                 {/* ── 9. CALL TO ACTION ───────────────────────────────────── */}
-                <div className="mt-24 text-center">
+                {/* <div className="mt-24 text-center">
                     <h3 className="mb-8 text-[11px] font-black uppercase tracking-[0.3em] text-gray-500">
                         Siap Terhubung Dengan Kami?
                     </h3>
@@ -569,7 +507,7 @@ export default function TentangKami() {
                             Hubungi Kami
                         </button>
                     </div>
-                </div>
+                </div> */}
 
             </div>
 

@@ -19,50 +19,63 @@ import {
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
+interface Job {
+  title: string;
+  type: string;
+  location: string;
+  category: string;
+  description: string;
+  qualifications: string[];
+}
+
 // Data pekerjaan ditambahkan dengan deskripsi dan kualifikasi untuk keperluan Modal
-const jobs = [
-  {
-    title: "Network Engineer (Satellite Specialist)",
-    type: "Full-time",
-    location: "Jakarta / Remote",
-    category: "Technical",
-    description: "Bertanggung jawab atas pemantauan, pemeliharaan, dan optimalisasi infrastruktur jaringan satelit LEO. Anda akan memastikan tingkat layanan (SLA) terpenuhi dan melakukan troubleshooting tingkat lanjut untuk klien enterprise di seluruh Indonesia.",
-    qualifications: [
-      "S1 Teknik Telekomunikasi, Teknik Elektro, atau bidang terkait.",
-      "Pengalaman minimal 3 tahun di bidang jaringan telekomunikasi atau VSAT.",
-      "Memiliki sertifikasi jaringan (Cisco CCNP / Mikrotik MTCRE) menjadi nilai plus.",
-      "Pemahaman kuat tentang protokol routing (BGP, OSPF) dan manajemen bandwidth.",
-      "Bersedia bekerja dalam sistem shift untuk memastikan monitoring jaringan 24/7."
-    ]
-  },
-  {
-    title: "Account Executive",
-    type: "Full-time",
-    location: "Surabaya",
-    category: "Sales",
-    description: "Menjadi ujung tombak perusahaan dalam memperkenalkan solusi internet satelit NSC ke sektor korporasi dan maritim di wilayah Timur. Anda akan membangun relasi B2B jangka panjang dan mencapai target pertumbuhan wilayah secara agresif.",
-    qualifications: [
-      "Pengalaman minimal 2 tahun dalam B2B Sales, lebih disukai di industri IT/Telco.",
-      "Memiliki kemampuan negosiasi dan presentasi yang sangat baik.",
-      "Mampu menyusun proposal penawaran teknis dan komersial.",
-      "Memiliki jaringan koneksi yang luas di industri pertambangan, maritim, atau logistik.",
-      "Berorientasi pada target dan mampu bekerja dengan supervisi minimum."
-    ]
-  },
-  {
-    title: "Customer Success Lead",
-    type: "Full-time",
-    location: "Jakarta",
-    category: "Operations",
-    description: "Memimpin tim Customer Success untuk memastikan klien mendapatkan nilai maksimal dari layanan internet satelit Akastar. Anda akan berperan sebagai jembatan antara klien dan tim teknis untuk menyelesaikan masalah kritis dengan cepat.",
-    qualifications: [
-      "Pengalaman 4+ tahun di bidang Customer Success, Account Management, atau Technical Support.",
-      "Mampu menerjemahkan masalah teknis (jaringan/internet) ke dalam bahasa yang mudah dipahami klien.",
-      "Berpengalaman menggunakan software CRM (Zendesk / Salesforce).",
-      "Memiliki kemampuan leadership dan problem-solving yang tajam.",
-      "Mampu bekerja di bawah tekanan dengan KPI resolusi keluhan pelanggan."
-    ]
-  },
+// const jobs = [
+//   {
+//     title: "Network Engineer (Satellite Specialist)",
+//     type: "Full-time",
+//     location: "Jakarta / Remote",
+//     category: "Technical",
+//     description: "Bertanggung jawab atas pemantauan, pemeliharaan, dan optimalisasi infrastruktur jaringan satelit LEO. Anda akan memastikan tingkat layanan (SLA) terpenuhi dan melakukan troubleshooting tingkat lanjut untuk klien enterprise di seluruh Indonesia.",
+//     qualifications: [
+//       "S1 Teknik Telekomunikasi, Teknik Elektro, atau bidang terkait.",
+//       "Pengalaman minimal 3 tahun di bidang jaringan telekomunikasi atau VSAT.",
+//       "Memiliki sertifikasi jaringan (Cisco CCNP / Mikrotik MTCRE) menjadi nilai plus.",
+//       "Pemahaman kuat tentang protokol routing (BGP, OSPF) dan manajemen bandwidth.",
+//       "Bersedia bekerja dalam sistem shift untuk memastikan monitoring jaringan 24/7."
+//     ]
+//   },
+//   {
+//     title: "Account Executive",
+//     type: "Full-time",
+//     location: "Surabaya",
+//     category: "Sales",
+//     description: "Menjadi ujung tombak perusahaan dalam memperkenalkan solusi internet satelit NSC ke sektor korporasi dan maritim di wilayah Timur. Anda akan membangun relasi B2B jangka panjang dan mencapai target pertumbuhan wilayah secara agresif.",
+//     qualifications: [
+//       "Pengalaman minimal 2 tahun dalam B2B Sales, lebih disukai di industri IT/Telco.",
+//       "Memiliki kemampuan negosiasi dan presentasi yang sangat baik.",
+//       "Mampu menyusun proposal penawaran teknis dan komersial.",
+//       "Memiliki jaringan koneksi yang luas di industri pertambangan, maritim, atau logistik.",
+//       "Berorientasi pada target dan mampu bekerja dengan supervisi minimum."
+//     ]
+//   },
+//   {
+//     title: "Customer Success Lead",
+//     type: "Full-time",
+//     location: "Jakarta",
+//     category: "Operations",
+//     description: "Memimpin tim Customer Success untuk memastikan klien mendapatkan nilai maksimal dari layanan internet satelit Akastar. Anda akan berperan sebagai jembatan antara klien dan tim teknis untuk menyelesaikan masalah kritis dengan cepat.",
+//     qualifications: [
+//       "Pengalaman 4+ tahun di bidang Customer Success, Account Management, atau Technical Support.",
+//       "Mampu menerjemahkan masalah teknis (jaringan/internet) ke dalam bahasa yang mudah dipahami klien.",
+//       "Berpengalaman menggunakan software CRM (Zendesk / Salesforce).",
+//       "Memiliki kemampuan leadership dan problem-solving yang tajam.",
+//       "Mampu bekerja di bawah tekanan dengan KPI resolusi keluhan pelanggan."
+//     ]
+//   },
+// ];
+
+const jobs: Job[] = [
+  
 ];
 
 const benefits = [
@@ -81,7 +94,7 @@ export default function CareerPage() {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative h-[70vh] w-full overflow-hidden">
+      <section className="relative h-[50vh] w-full overflow-hidden">
         <Image
           src="/career-hero.webp"
           alt="Career at NSC"
@@ -136,34 +149,48 @@ export default function CareerPage() {
 
         {/* Open Positions Section */}
         <div className="w-full max-w-5xl mb-10">
-          <div className="mb-16 flex flex-col items-center text-center">
-            <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-orange-500/80 mb-2">Opportunities</h4>
-            <h2 className="mb-4 text-3xl font-bold uppercase tracking-tight md:text-4xl text-white">Posisi Terbuka</h2>
+          <div className="mb-8 flex flex-col items-center text-center">
+            <h4 className="text-[16px] font-black uppercase tracking-[0.3em] text-orange-500/80 mb-2">Opportunities</h4>
+            {(jobs.length > 0) ? (
+              <h2 className="mb-4 text-3xl font-bold uppercase tracking-tight md:text-4xl text-white">Posisi Terbuka</h2>
+            ) : (
+              <></>
+            )}
             <div className="h-1.5 w-20 bg-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.5)] rounded-full" />
           </div>
 
-          <div className="space-y-4">
-            {jobs.map((job, idx) => (
-              <motion.div 
-                key={idx}
-                whileHover={{ x: 12 }}
-                onClick={() => setSelectedJob(job)} // Trigger modal di sini
-                className="group flex flex-col justify-between rounded-2xl border border-white/5 bg-[#111111] p-8 transition-all hover:bg-[#1a1a1a] hover:border-orange-500/50 hover:shadow-[0_0_15px_rgba(249,115,22,0.1)] md:flex-row md:items-center cursor-pointer"
-              >
-                <div className="mb-6 md:mb-0">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-orange-500 group-hover:text-orange-400 transition-colors">{job.category}</span>
-                  <h3 className="text-xl font-bold text-white group-hover:text-orange-500 transition-colors mt-1">{job.title}</h3>
-                  <div className="mt-3 flex flex-wrap gap-4 text-xs font-medium text-gray-500 group-hover:text-gray-400 transition-colors">
-                    <span className="flex items-center gap-2"><MapPin size={14}/> {job.location}</span>
-                    <span className="flex items-center gap-1"><Clock size={14}/> {job.type}</span>
+          {(jobs.length === 0) ? (
+            <div className="p-6 md:p-8 border-t border-white/5 bg-black/20 relative z-10">
+              <p className="text-center text-[16px] text-gray-400 mt-5 font-medium leading-relaxed">
+                Kirimkan Lamaran dan CV Anda (maks. 50MB) ke <span className="text-orange-500 font-bold">talent@nsc.id</span><br className="hidden sm:block" /> dengan subjek email <span className="text-white font-bold">Lamaran Kerja - [Posisi]</span>.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {jobs.map((job, idx) => (
+                <motion.div 
+                  key={idx}
+                  whileHover={{ x: 12 }}
+                  onClick={() => setSelectedJob(job)} // Trigger modal di sini
+                  className="group flex flex-col justify-between rounded-2xl border border-white/5 bg-[#111111] p-8 transition-all hover:bg-[#1a1a1a] hover:border-orange-500/50 hover:shadow-[0_0_15px_rgba(249,115,22,0.1)] md:flex-row md:items-center cursor-pointer"
+                >
+                  <div className="mb-6 md:mb-0">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-orange-500 group-hover:text-orange-400 transition-colors">{job.category}</span>
+                    <h3 className="text-xl font-bold text-white group-hover:text-orange-500 transition-colors mt-1">{job.title}</h3>
+                    <div className="mt-3 flex flex-wrap gap-4 text-xs font-medium text-gray-500 group-hover:text-gray-400 transition-colors">
+                      <span className="flex items-center gap-2"><MapPin size={14}/> {job.location}</span>
+                      <span className="flex items-center gap-1"><Clock size={14}/> {job.type}</span>
+                    </div>
                   </div>
-                </div>
-                <button className="inline-flex items-center justify-center rounded-xl bg-white/5 border border-white/10 px-8 py-4 text-[11px] font-black uppercase tracking-widest text-white transition-all group-hover:bg-orange-500 group-hover:text-black group-hover:border-orange-500 active:scale-95 shadow-lg">
-                  Lihat Detail <ArrowRight size={14} className="ml-2 group-hover:translate-x-1 transition-transform" />
-                </button>
-              </motion.div>
-            ))}
-          </div>
+                  <button className="inline-flex items-center justify-center rounded-xl bg-white/5 border border-white/10 px-8 py-4 text-[11px] font-black uppercase tracking-widest text-white transition-all group-hover:bg-orange-500 group-hover:text-black group-hover:border-orange-500 active:scale-95 shadow-lg">
+                    Lihat Detail <ArrowRight size={14} className="ml-2 group-hover:translate-x-1 transition-transform" />
+                  </button>
+                </motion.div>
+              ))}
+            </div>
+          )}
+
+
         </div>
 
       </div>
@@ -233,11 +260,8 @@ export default function CareerPage() {
 
               {/* Modal Footer (Action Button & Email Info) */}
               <div className="p-6 md:p-8 border-t border-white/5 bg-black/20 relative z-10">
-                <button className="w-full flex items-center justify-center gap-2 py-4 rounded-xl bg-orange-500 text-black text-[11px] font-black uppercase tracking-[0.2em] hover:bg-orange-400 transition-all shadow-[0_0_15px_rgba(249,115,22,0.3)] active:scale-95">
-                  <Send size={16} /> Kirim Lamaran Sekarang
-                </button>
-                <p className="text-center text-[11px] text-gray-400 mt-5 font-medium leading-relaxed">
-                  Atau kirimkan CV dan Portfolio Anda ke <span className="text-orange-500 font-bold">talent@nsc.id</span><br className="hidden sm:block" /> dengan subjek email <span className="text-white font-bold">{selectedJob.title} - [Nama Anda]</span>.
+                <p className="text-center text-[14px] text-gray-400 mt-5 font-medium leading-relaxed">
+                  Kirimkan Lamaran dan CV Anda (maks. 50MB) ke <span className="text-orange-500 font-bold">talent@nsc.id</span><br className="hidden sm:block" /> dengan subjek email <span className="text-white font-bold">Lamaran Kerja - {selectedJob.title} - [Nama Anda]</span>.
                 </p>
               </div>
             </motion.div>

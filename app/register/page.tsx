@@ -180,7 +180,7 @@ export default function RegisterPage() {
 
                 {/* Full Name Field */}
                 <div className="space-y-2">
-                  <label className="text-[14px] font-bold text-gray-300 ml-1">Nama</label>
+                  <label className="text-[14px] font-bold text-gray-300 ml-1">Nama </label>*&#41;
                   <div className="relative">
                     <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
                     <input 
@@ -197,7 +197,7 @@ export default function RegisterPage() {
 
                 {/* Email Field */}
                 <div className="space-y-2">
-                  <label className="text-[14px] font-bold text-gray-300 ml-1">Email</label>
+                  <label className="text-[14px] font-bold text-gray-300 ml-1">Email </label>*&#41;
                   <div className="relative">
                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
                     <input 
@@ -214,7 +214,7 @@ export default function RegisterPage() {
 
                 {/* Phone No Field */}
                 <div className="space-y-2">
-                  <label className="text-[14px] font-bold text-gray-300 ml-1">Phone No.</label>
+                  <label className="text-[14px] font-bold text-gray-300 ml-1">Phone No. </label>*&#41;
                   <div className="relative">
                     <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
                     <input 
@@ -235,7 +235,7 @@ export default function RegisterPage() {
                   <div className="relative">
                     <Building className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
                     <input 
-                      type="text" required={true}
+                      type="text" required={false}
                       placeholder=""
                       value={companyName}
                       onChange={(e)=>
@@ -247,7 +247,7 @@ export default function RegisterPage() {
                 </div>
 
                 {/* Job Title Field */}
-                <div className="space-y-2">
+                {/* <div className="space-y-2">
                   <label className="text-[14px] font-bold text-gray-300 ml-1">Jabatan</label>
                   <div className="relative">
                     <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
@@ -261,11 +261,11 @@ export default function RegisterPage() {
                       className="w-full rounded-xl border border-white/5 bg-white/[0.05] py-3.5 pl-12 pr-4 text-sm transition-all focus:border-orange-500/50 focus:bg-white/[0.08] outline-none placeholder:text-gray-600"
                     />
                   </div>
-                </div>
+                </div> */}
 
                 {/* Profession Field */}
                 <div className="space-y-2">
-                  <label className="text-[14px] font-bold text-gray-300 ml-1">Profesi</label>
+                  <label className="text-[14px] font-bold text-gray-300 ml-1">Profesi </label>*&#41;
                   <div className="relative">
                     <IdCard className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
                     <input 
@@ -282,7 +282,7 @@ export default function RegisterPage() {
 
                 {/* Password Field */}
                 <div className="space-y-2">
-                  <label className="text-[14px] font-bold text-gray-300 ml-1">Password</label>
+                  <label className="text-[14px] font-bold text-gray-300 ml-1">Password </label>*&#41;
                   <div className="relative">
                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
                     <input 
@@ -314,7 +314,7 @@ export default function RegisterPage() {
 
                 {/* Password Confirmation */}
                 <div className="space-y-2">
-                  <label className="text-[14px] font-bold text-gray-300 ml-1">Password Confirmation</label>
+                  <label className="text-[14px] font-bold text-gray-300 ml-1">Password Confirmation </label>*&#41;
                   <div className="relative">
                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
                     <input 

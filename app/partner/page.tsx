@@ -82,42 +82,72 @@ export default function PartnerPage() {
 
       {/* --- LOGO WALL (GRID PARTNER) --- */}
       <section className="relative z-10 px-6 py-12 md:px-12 lg:px-24">
-        <div className="max-w-6xl mx-auto">
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {partners.map((partner, idx) => (
-              <motion.div
-                key={partner.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.1 }}
-                className={`group flex flex-col p-8 md:p-10 rounded-[32px] bg-[#111111] border border-white/10 transition-all duration-500 cursor-default ${partner.brandColor}`}
-              >
-                {/* Logo Image */}
-                <div className="h-20 mb-8 border-b border-white/10 pb-6 flex items-center">
-                  <div className="relative w-40 h-12">
-                    <Image 
-                      src={partner.image} 
-                      alt={partner.name} 
-                      fill 
-                      className="object-contain object-left filter brightness-90 group-hover:brightness-100 transition-all duration-500" 
-                    />
-                  </div>
-                </div>
 
-                <span className="text-[10px] font-black uppercase tracking-widest text-orange-500 mb-3">
-                  {partner.role}
-                </span>
-                
-                <p className="text-gray-400 text-sm font-medium leading-relaxed">
-                  {partner.description}
-                </p>
-              </motion.div>
-            ))}
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+        
+          {/* Our Partnership */}
+          <div className="rounded-[28px] border border-white/10 bg-[#111111] p-6 lg:p-10">
+              <p className="text-center text-[11px] font-black uppercase tracking-[0.3em] text-gray-600 mb-6">
+                  Our Partnership
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {[
+                      { name: "Telkomsat",                file: "telkomsat" },
+                      { name: "MTM",                      file: "mtm" },
+                      { name: "MikroTik",                 file: "mikrotik" },
+                      { name: "Terang Sinergi Nusantara", file: "tsn" },
+                      { name: "RBN",                      file: "rbn" },
+                      { name: "APJII",                    file: "apjii" },
+                      { name: "Peplink",                  file: "peplink" },
+                      { name: "HSP",                      file: "hsp" },
+                      { name: "Mastersystem",             file: "mastersystem" },
+                      { name: "Arthanet",                 file: "arthanet" },
+                      { name: "Matrix",                   file: "matrix" },
+                  ].map((item, idx) => (
+                      <div
+                          key={idx}
+                          className="group flex items-center justify-center rounded-2xl bg-white transition-all duration-300 hover:scale-105 hover:shadow-[0_0_20px_rgba(249,115,22,0.4)] hover:ring-2 hover:ring-orange-500/50 p-3 aspect-[3/2]"
+                      >
+                          <Image
+                              src={`/partners/${item.file}.png`}
+                              alt={item.name}
+                              width={120}
+                              height={60}
+                              className="object-contain w-full h-full"
+                          />
+                      </div>
+                  ))}
+              </div>
+          </div>
+
+          {/* Our Clients */}
+          <div className="rounded-[28px] border border-white/10 bg-[#111111] p-6 lg:p-10">
+              <p className="text-center text-[11px] font-black uppercase tracking-[0.3em] text-gray-600 mb-6">
+                  Our Clients
+              </p>
+              <div className="grid grid-cols-2 gap-4">
+                  {[
+                      { name: "Telkomsel", file: "telkomsel" },
+                      { name: "PT Pelni",  file: "pelni" },
+                  ].map((item, idx) => (
+                      <div
+                          key={idx}
+                          className="group flex items-center justify-center rounded-2xl bg-white transition-all duration-300 hover:scale-105 hover:shadow-[0_0_20px_rgba(249,115,22,0.4)] hover:ring-2 hover:ring-orange-500/50 p-5 aspect-[3/2]"
+                      >
+                          <Image
+                              src={`/partners/${item.file}.png`}
+                              alt={item.name}
+                              width={180}
+                              height={90}
+                              className="object-contain w-full h-full"
+                          />
+                      </div>
+                  ))}
+              </div>
           </div>
 
         </div>
+        
       </section>
 
       {/* --- SECTION JARINGAN --- */}

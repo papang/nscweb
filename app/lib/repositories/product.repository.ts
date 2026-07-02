@@ -60,7 +60,7 @@ export async function getAllProduct() {
 export async function getProductCategory() {
   const result = await pool.query(
     ` SELECT product_cat_id, category_name, category_desc
-    FROM public.product_cat order by product_cat_id
+    FROM public.product_cat order by ord_num
     `,
     []
   );
