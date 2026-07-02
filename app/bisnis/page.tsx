@@ -1,3 +1,5 @@
+'use client';
+
 import Image from "next/image";
 import Footer from "@/components/Footer";
 
@@ -17,7 +19,7 @@ export default function Bisnis() {
             className="object-cover object-center"
             priority
           />
-          <div className="absolute inset-0 bg-black/20"></div>
+          <div className="absolute inset-0 bg-black/20">s</div>
           <div className="absolute bottom-0 left-0 h-1/2 w-full bg-gradient-to-t from-black via-black/80 to-transparent"></div>
         </div>
 

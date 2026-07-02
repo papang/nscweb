@@ -260,7 +260,7 @@ export default function NewsDetailDynamic({ params }: { params: Promise<{ slug: 
             <section className="relative overflow-hidden p-8 rounded-[32px] bg-[#0a0a0a] border border-orange-500/30 shadow-[0_0_20px_rgba(249,115,22,0.1)] group cursor-pointer">
               <div className="relative z-10 space-y-4">
                 <h3 className="text-xl font-bold leading-tight text-white">Butuh Internet Cepat?</h3>
-                <p className="text-sm text-gray-400 font-medium">Dapatkan layanan Starlink Enterprise dengan instalasi prioritas sekarang.</p>
+                <p className="text-sm text-gray-400 font-medium">Dapatkan layanan Enterprise kami dengan instalasi prioritas sekarang.</p>
                 <Link href="/hubungi-kami" className="block w-full bg-orange-500 text-black text-center font-black text-[10px] uppercase py-3 rounded-xl hover:bg-orange-400 transition-all tracking-[0.2em] shadow-[0_0_15px_rgba(249,115,22,0.3)] active:scale-95 mt-2">
                   Hubungi Kami
                 </Link>

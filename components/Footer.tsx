@@ -24,7 +24,10 @@ export default function Footer() {
                 placeholder="Email" 
                 className="w-full border-b border-gray-600 bg-transparent pb-1 pt-2 text-[13px] text-white outline-none transition-colors focus:border-orange-500 placeholder:text-gray-600 lg:w-48"
               />
-              <button className="group flex items-center gap-1 text-[12px] font-bold text-white transition-colors hover:text-orange-500">
+              <button 
+                onClick={() => alert("Fitur ini belum tersedia. Silakan hubungi kami melalui email atau WhatsApp untuk mendaftar newsletter.")}
+                className="group flex items-center gap-1 text-[12px] font-bold text-white transition-colors hover:text-orange-500"
+                >
                 DAFTAR
                 <svg className="h-3 w-3 transform transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
@@ -60,13 +63,13 @@ export default function Footer() {
             </span>
           </div>
 
-          <div className="text-[12px] text-gray-400 font-medium">
+          {/* <div className="text-[12px] text-gray-400 font-medium">
             Dengan mengeklik Daftar, Anda menyetujui{" "}
             <a href="#" className="font-bold text-white transition-colors hover:text-orange-500">
               Kebijakan Privasi
             </a>{" "}
             kami
-          </div>
+          </div> */}
 
         </div>
       </div>

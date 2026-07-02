@@ -1,20 +1,20 @@
-/* /api/sku */
+import { NextRequest, NextResponse } from "next/server";
 
-import { NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
+import { getServiceCategory } from "@/app/lib/repositories/service.repository";
 
-import { getSKUByProductNoOTC } from "@/app/lib/repositories/service.repository";
-
-export async function GET(request: Request) {
+export async function GET() {
   try {
+    // const body = await request.json();
 
-    const rec = await getSKUByProductNoOTC();
+    // const {} = body;
 
-    if (!rec) {
+    const productCategory = await getServiceCategory();
+
+    if (!productCategory) {
       return NextResponse.json(
         {
           success: false,
-          message: "Empty product",
+          message: "Empty product category",
         },
         {
           status: 401,
@@ -26,7 +26,7 @@ export async function GET(request: Request) {
       NextResponse.json({
         success: true, 
         message: "",
-        data: rec,
+        data: productCategory,
       });
 
     return response;

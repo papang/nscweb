@@ -3,18 +3,18 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 
-import { getSKUByProductNoOTC } from "@/app/lib/repositories/service.repository";
+import { getServiceLine } from "@/app/lib/repositories/service.repository";
 
 export async function GET(request: Request) {
   try {
 
-    const rec = await getSKUByProductNoOTC();
+    const rec = await getServiceLine();
 
     if (!rec) {
       return NextResponse.json(
         {
           success: false,
-          message: "Empty product",
+          message: "Empty service line",
         },
         {
           status: 401,

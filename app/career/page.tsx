@@ -162,7 +162,7 @@ export default function CareerPage() {
           {(jobs.length === 0) ? (
             <div className="p-6 md:p-8 border-t border-white/5 bg-black/20 relative z-10">
               <p className="text-center text-[16px] text-gray-400 mt-5 font-medium leading-relaxed">
-                Kirimkan Lamaran dan CV Anda (maks. 50MB) ke <span className="text-orange-500 font-bold">talent@nsc.id</span><br className="hidden sm:block" /> dengan subjek email <span className="text-white font-bold">Lamaran Kerja - [Posisi]</span>.
+                Kirimkan Lamaran dan CV Anda (format file: PDF; maks. 50MB) ke <span className="text-orange-500 font-bold">talent@nsc.id</span><br className="hidden sm:block" /> dengan subjek email <span className="text-white font-bold">Lamaran Kerja - [Posisi]</span>.
               </p>
             </div>
           ) : (
@@ -261,7 +261,7 @@ export default function CareerPage() {
               {/* Modal Footer (Action Button & Email Info) */}
               <div className="p-6 md:p-8 border-t border-white/5 bg-black/20 relative z-10">
                 <p className="text-center text-[14px] text-gray-400 mt-5 font-medium leading-relaxed">
-                  Kirimkan Lamaran dan CV Anda (maks. 50MB) ke <span className="text-orange-500 font-bold">talent@nsc.id</span><br className="hidden sm:block" /> dengan subjek email <span className="text-white font-bold">Lamaran Kerja - {selectedJob.title} - [Nama Anda]</span>.
+                  Kirimkan Lamaran dan CV Anda (format file: PDF; maks. 50MB) ke <span className="text-orange-500 font-bold">talent@nsc.id</span><br className="hidden sm:block" /> dengan subjek email <span className="text-white font-bold">Lamaran Kerja - {selectedJob.title} - [Nama Anda]</span>.
                 </p>
               </div>
             </motion.div>
