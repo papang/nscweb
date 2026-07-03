@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, Suspense, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
@@ -20,7 +21,7 @@ import DialogInfo from "@/components/DialogInfo";
 import { sendmail_order } from "@/app/lib/sendmail_order";
 import Swal from "sweetalert2";
 
-let userid = 34;
+// let userid = 34;
 
 export function listSKUOrder() {
   const [totalNum, setTotalNum] = useState(0);
@@ -70,6 +71,8 @@ export default function CheckoutPage() {
   // const searchParams = useSearchParams();
   // const planQuery = searchParams.get("plan");
 
+  const router = useRouter();
+
   const { loading, isAuthenticated, user } = useAuth();
   // console.log(user);
 
@@ -115,56 +118,57 @@ export default function CheckoutPage() {
   };
 
 
-  const hndlrDelete = async (delskuid) => {
+  const hndlrDelete = (delskuid: string) => {
   
-    // Swal.fire({
-    //   title: "",
-    //   text: "Anda yakin ingin menghapus?",
-    //   icon: "question",
-    //   background: "#111",
-    //   color: "#fff",
-    //   showCancelButton: true,
-    //   confirmButtonColor: "#f97316",
-    //   cancelButtonColor: "#523232",
-    //   confirmButtonText: "Ya",
-    //   cancelButtonText: "Tidak",
-    // }).then((result) => {
-    //   if (result.isConfirmed) {
-        try {
-          const response = await fetch("/api/order/delete",
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                delskuid, userid
-              }),
-            }
-          );
+    Swal.fire({
+      title: "",
+      text: "Anda yakin ingin menghapus?",
+      icon: "question",
+      background: "#111",
+      color: "#fff",
+      showCancelButton: true,
+      confirmButtonColor: "#f97316",
+      cancelButtonColor: "#523232",
+      confirmButtonText: "Ya",
+      cancelButtonText: "Tidak",
+    }).then(async (result) => {
 
-          const result = await response.json();
+      if (result.isConfirmed) {
 
-          if(result.success) {
-            Swal.fire({
-              title: "Berhasil",
-              text: "Pesanan berhasil dihapus.",
-              icon: "success",
-              background: "#111",
-              color: "#fff",
-              confirmButtonColor: "#f97316",
-            }).then(() => {
-              window.location.href="/product/checkout";
-            });
+        const response = await fetch("/api/order/delete",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              sku_id: delskuid
+            }),
+          }
+        );
+
+        const result =  await response.json();
+
+        if(result.success) {
+          Swal.fire({
+            title: "",
+            text: "Pesanan Anda berhasil dihapus.",
+            icon: "success",
+            background: "#111",
+            color: "#fff",
+            confirmButtonColor: "#f97316",
+          }).then(() => {
+            window.location.href="/product/checkout";
+            // router.refresh();
+          });
             
-          } 
-          
-        } catch (error) {
-          console.error(error);
-        }
+        } 
         
-    //   } 
-    // });
+        
+        
+        
+      } 
+    });
   
   };
 

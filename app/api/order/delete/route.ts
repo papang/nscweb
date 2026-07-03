@@ -13,12 +13,12 @@ export async function POST(
     const cookieStore = await cookies();
     const token = cookieStore.get("token")?.value || "";
     const user = verifyToken(token);
-    // const userid = user?.userId;
+    const userid = user?.userId;
 
     const body = await request.json();
-    const { delskuid, userid } = body;
+    const { sku_id } = body;
 
-    const order = await deleteActiveOrder(userid, delskuid, "0");
+    const order = await deleteActiveOrder(userid, sku_id, "0");
 
     return NextResponse.json({
       success: true, 

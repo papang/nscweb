@@ -35,12 +35,15 @@ export async function sendmail_order({name, email, orders}: sendmailProps) {
   let total =0;
   for (const key in orders) {
     const item = orders[key];
-    total = total + Number(item.unit_price);
+    total = total + Number(item.sales_price);
     message = message + "<tr style='border-bottom: 1px solid #333'>";
-    message = message + "<td><b style='font-size:14px'>" + item.product_name + "</b><br /><b>" + item.sku_name + "</b></td>";
-    message = message + "<td>" + item.prodstream_name + " - " + item.prodtype_name + "<br />";
-    message = message + "UP: " + item.spec_mir_up + " - DOWN: " + item.spec_mir_down + "</td>";
-    message = message + "<td align='right'><b>Rp " + formatDecimal(item.unit_price) + "</b></td></tr>";
+    message = message + "<td><b style='font-size:14px'>" + item.net_service_name + "</b><br /><b>" + item.sku_name + "</b></td>";
+    message = message + "<td>" + item.territory_name + " - " + item.service_bw_name + "<br />";
+    if(item.charge_type_code == "MRC") {
+      message = message + "UP: " + item.spec_attributes.mir_up + " - DOWN: " + item.spec_attributes.mir_down ;
+    }
+    message = message + "</td>";
+    message = message + "<td align='right'><b>Rp " + formatDecimal(item.sales_price) + "</b></td></tr>";
   }
 
   message = message + "<tr style='background-color: #939190;'><td colspan='2' align='center'><b>Total</b></td><td align='right'><b>Rp " + formatDecimal(total) + "</b></td></tr>";

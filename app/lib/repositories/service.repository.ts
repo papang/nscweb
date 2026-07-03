@@ -235,7 +235,8 @@ export async function insertOrder(user_id, sku_id, session_id = 0) {
 export async function deleteActiveOrder(user_id, sku_id, session_id) {
   // Dihapus
   const result = await pool.query(
-    ` delete from order_items 
+    ` update order_items 
+      set order_status_id = 4, updated_at = now()
       where user_id=$1 and ref_sku_id=$2 and session_id=$3 and order_status_id=1
       RETURNING user_id, sku_id
     `,
@@ -266,7 +267,7 @@ export async function sendOrderToSales(user_id, session_id="0") {
   const orders = await getSKUCurrentOrder(user_id, session_id);
   
   const result = await pool.query(
-    ` update order_items set order_status_id=2
+    ` update order_items set order_status_id=2, updated_at=now()
       where (user_id=$1 or session_id=$2) and order_status_id=1  
     `,
     [user_id, session_id]
