@@ -117,21 +117,21 @@ export default function CheckoutPage() {
 
   const hndlrDelete = async (delskuid) => {
   
-    Swal.fire({
-      title: "",
-      text: "Anda yakin ingin menghapus?",
-      icon: "question",
-      background: "#111",
-      color: "#fff",
-      showCancelButton: true,
-      confirmButtonColor: "#f97316",
-      cancelButtonColor: "#523232",
-      confirmButtonText: "Ya",
-      cancelButtonText: "Tidak",
-    }).then((result) => {
-      if (result.isConfirmed) {
+    // Swal.fire({
+    //   title: "",
+    //   text: "Anda yakin ingin menghapus?",
+    //   icon: "question",
+    //   background: "#111",
+    //   color: "#fff",
+    //   showCancelButton: true,
+    //   confirmButtonColor: "#f97316",
+    //   cancelButtonColor: "#523232",
+    //   confirmButtonText: "Ya",
+    //   cancelButtonText: "Tidak",
+    // }).then((result) => {
+    //   if (result.isConfirmed) {
         try {
-          const response = fetch("/api/order/delete",
+          const response = await fetch("/api/order/delete",
             {
               method: "POST",
               headers: {
@@ -143,14 +143,28 @@ export default function CheckoutPage() {
             }
           );
 
-          window.location.href="/product/checkout";
+          const result = await response.json();
+
+          if(result.success) {
+            Swal.fire({
+              title: "Berhasil",
+              text: "Pesanan berhasil dihapus.",
+              icon: "success",
+              background: "#111",
+              color: "#fff",
+              confirmButtonColor: "#f97316",
+            }).then(() => {
+              window.location.href="/product/checkout";
+            });
+            
+          } 
           
         } catch (error) {
-
+          console.error(error);
         }
         
-      } 
-    });
+    //   } 
+    // });
   
   };
 
@@ -204,9 +218,8 @@ export default function CheckoutPage() {
                 {
                   (isAuthenticated && listSKU.length > 0) ? (
                     listSKU.map((items) => (
-                      <div>
+                      <div key={`del-${items.sku_id}`}>
                         <label
-                          key={`del-${items.sku_id}`}
                           className={`relative flex flex-col md:flex-row md:items-center md:justify-between gap-3 
                               mb-5 px-5 py-2 rounded-xl transition-all 
                               ${(items.territory_code == 'M') ? "bg-[#00A8B5]/30" : (

@@ -1,12 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, ReactNode } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import {
   ChevronDown,
   ShoppingCart,
+  Film,
+  Baby,
+  Tv,
+  Trophy,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -245,6 +249,42 @@ export default function ProductPage() {
                             <p className="text-xs md:text-sm leading-relaxed text-gray-300">
                               {service.spec_attributes.feature}
                             </p>
+
+                            {/* Tabel channel — hanya tampil jika produk memiliki channel_list (mis. IPTV Bundling) */}
+                            {service.spec_attributes.channels && (
+                              <div className="mt-4 pt-4 border-t border-white/10 space-y-4">
+                                {Object.entries(service.spec_attributes.channels).map(([catName, channels]: [string, any]) => {
+                                  const iconMap: Record<string, ReactNode> = {
+                                    "Film Asia & Barat": <Film size={14} className="text-orange-500 shrink-0" />,
+                                    "Anak": <Baby size={14} className="text-orange-500 shrink-0" />,
+                                    "TV Nasional": <Tv size={14} className="text-orange-500 shrink-0" />,
+                                    "Olahraga": <Trophy size={14} className="text-orange-500 shrink-0" />,
+                                  };
+
+                                  return (
+                                    <div key={catName}>
+                                      <div className="flex items-center gap-2 mb-2">
+                                        {iconMap[catName] ?? <Tv size={14} className="text-orange-500 shrink-0" />}
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-gray-200">
+                                          {catName}
+                                        </p>
+                                      </div>
+                                      <div className="flex flex-wrap gap-1.5">
+                                        {channels.map((ch: string, i: number) => (
+                                          <span
+                                            key={i}
+                                            className="px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-[11px] font-medium text-gray-300"
+                                          >
+                                            {ch}
+                                          </span>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            )}
+
                           </div>
                           <div className="p-4 rounded-xl bg-white/5 border border-white/10">
                             <p className="text-[10px] font-black uppercase text-orange-500 tracking-[0.2em] mb-2">Ideal Untuk</p>

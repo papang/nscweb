@@ -1,7 +1,31 @@
 import Link from "next/link";
 import { MapPin } from "lucide-react";
+import { useState } from "react";
+import { sendmail_newsletter_cust, sendmail_newsletter_sales } from "@/app/lib/sendmail_newsletter";
+import Swal from "sweetalert2";
 
 export default function Footer() {
+  const hndlrRequestNewsLetter = async () => {
+    
+    const resEmail = await sendmail_newsletter_cust({
+      name:"", email:email
+    });
+
+    const resEmailSales = await sendmail_newsletter_sales({
+      name:"", email:email
+    });
+
+
+    if (resEmail.success) {
+      console.log("Email sent successfully:", resEmail.message);
+      Swal.fire("Terimakasih!", "Permintaan anda telah dikirim. Tim Kami akan segera menghubungi Anda melalui email.", "success");
+    } else {
+      console.error("Failed to send email:", resEmail.message);
+    }
+    
+  };
+
+  const [email, setEmail] = useState("");
   return (
     <footer className="w-full bg-black px-8 py-12 md:px-16 lg:px-24 border-t border-white/10">
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-10">
@@ -21,11 +45,19 @@ export default function Footer() {
             <div className="flex items-end gap-4">
               <input 
                 type="email" 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="Email" 
                 className="w-full border-b border-gray-600 bg-transparent pb-1 pt-2 text-[13px] text-white outline-none transition-colors focus:border-orange-500 placeholder:text-gray-600 lg:w-48"
               />
               <button 
-                onClick={() => alert("Fitur ini belum tersedia. Silakan hubungi kami melalui email atau WhatsApp untuk mendaftar newsletter.")}
+                onClick={() => {
+                  if (!email) {
+                    alert("Silakan masukkan alamat email Anda.");
+                    return;
+                  }
+                  hndlrRequestNewsLetter(); 
+                }}
                 className="group flex items-center gap-1 text-[12px] font-bold text-white transition-colors hover:text-orange-500"
                 >
                 DAFTAR

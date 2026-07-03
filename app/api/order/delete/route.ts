@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { sendOrderToSales, deleteActiveOrder } from "@/app/lib/repositories/service.repository";
+import { deleteActiveOrder } from "@/app/lib/repositories/service.repository";
 import { cookies } from "next/headers";
 import { verifyToken } from "@/app/lib/auth";
 
@@ -21,7 +21,8 @@ export async function POST(
     const order = await deleteActiveOrder(userid, delskuid, "0");
 
     return NextResponse.json({
-      success: true
+      success: true, 
+      data: order,
     });
 
   } catch (error) {
