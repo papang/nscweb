@@ -97,17 +97,22 @@ function ProductConfigureContent() {
     (s: any) => s.territory_code === territory && (!selectedType || s.service_bw_name === selectedType) && (!selectedCharge || s.charge_type_code === selectedCharge)
   );
 
+  const otcItems = skuItems.filter(
+    (s: any) => s.territory_code === territory && (s.service_bw_name === selectedType) && (s.charge_type_code === "OTC")
+  );
+
   const selectedItem = skuItems.find((s: any) => s.sku_id === selectedSKU);
 
   // Produk-produk yang masuk ke grup MRC & OTC pada kalkulator.
-  // Dibuat sebagai array supaya siap dikembangkan jika nanti ada
-  // lebih dari satu produk terpilih per grup.
-  const mrcItems = selectedItem ? [selectedItem] : [];
-  const otcItems = selectedItem ? [selectedItem] : [];
 
-  const totalMRC = selectedItem ? Number(selectedItem.mrc) : 0;
-  const totalOTC = selectedItem ? Number(selectedItem.otc) : 0;
+  // ------- 
+
+  const mrcItems = selectedItem ? [selectedItem] : [];
+
+  const totalMRC = mrcItems.reduce((sum, item) => sum + Number(item.sales_price), 0);
+  const totalOTC = otcItems.reduce((sum, item) => sum + Number(item.sales_price), 0);
   const totalDueToday = totalMRC + totalOTC;
+
 
   const handleConfirmOrder = async () => {
     if (!selectedSKU) return;
@@ -115,14 +120,14 @@ function ProductConfigureContent() {
     const response = await fetch("/api/order/new", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ sku_select: selectedSKU }),
+      body: JSON.stringify({ sku_mrc: mrcItems, sku_otc: otcItems }), // Include OTC items in the order
     });
     const result = await response.json();
 
     if (result.success) {
       Swal.fire({
         title: "",
-        text: "Pilihan Produk Anda telah disimpan.\nIngin memilih produk kembali?",
+        text: "Paket Layanan Anda telah ditambahkan.\nIngin memilih kembali?",
         icon: "success",
         background: "#111",
         color: "#fff",
@@ -130,12 +135,14 @@ function ProductConfigureContent() {
         confirmButtonColor: "#f97316",
         cancelButtonColor: "#523232",
         confirmButtonText: "Lanjut Pilih Produk",
-        cancelButtonText: "Checkout",
+        cancelButtonText: "Lihat Ringkasan",
       }).then((res) => {
         if (!res.isConfirmed) {
           router.push("/product/checkout");
         } else {
-          router.push("/product");
+          router.refresh();
+          setSelectedType(null);
+          setSelectedSKU(null);
         }
       });
     } else {
@@ -171,7 +178,7 @@ function ProductConfigureContent() {
         </Link>
         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-white">
-            {service?.service_name ?? "Konfigurasi Produk"}
+            {service?.service_name ?? "Konfigurasi Paket Layanan"}
           </h1>
           <p className="text-xs md:text-sm font-black uppercase tracking-[0.2em] text-orange-500 mt-2">
             Teritori: {territoryDict[territory as keyof TerritoryDict] || territory}
@@ -277,9 +284,9 @@ function ProductConfigureContent() {
                 >
                   {filteredSKUs.map((item: any) => {
                     const checked = selectedSKU === item.sku_id;
-                    const priceLabel = activeTab === "mrc" ? "Harga langganan / bulan" : "1 Kali Pembayaran";
+                    const priceLabel = activeTab === "mrc" ? "Harga langganan / bulan" : "1 kali pembayaran";
                     // const priceValue = activeTab === "mrc" ? item.mrc : item.otc;
-                    const priceValue = item.unit_price; 
+                    const priceValue = item.sales_price; 
 
                     return (
                       <label
@@ -290,22 +297,25 @@ function ProductConfigureContent() {
                             : "border-white/10 bg-white/5 hover:border-white/20"
                         }`}
                       >
-                        <div className="flex items-start gap-4">
-                          <input
-                            type="radio"
-                            name="sku_select"
-                            value={item.sku_id}
-                            checked={checked}
-                            onChange={() => setSelectedSKU(item.sku_id)}
-                            className="mt-1 h-4 w-4 accent-orange-500"
-                          />
-                          <div>
-                            <span className="block font-bold text-orange-300 text-base md:text-lg">
-                              {item.service_name}
-                            </span>
-                            {(item.charge_type_code === "MRC") && ( 
-                              <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-xs md:text-sm">
+
+                        {(item.charge_type_code === "MRC") ? ( 
+                          <div className="flex items-start gap-4">
+                          
+                            <input
+                              type="radio"
+                              name="sku_select"
+                              value={item.sku_id}
+                              checked={checked}
+                              onChange={() => setSelectedSKU(item.sku_id)}
+                              className="mt-1 h-4 w-4 accent-orange-500"
+                            />
+
+                            <div>
+                              <span className="block font-bold text-orange-300 text-base md:text-lg">
+                                {item.service_name}
+                              </span>
                               
+                              <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-xs md:text-sm">
                                 <div className="text-white/80">
                                   <span className="font-medium text-slate-400 text-[10px] uppercase block">Up</span>
                                   {item.spec_attributes.mir_up} 
@@ -314,19 +324,42 @@ function ProductConfigureContent() {
                                   <span className="font-medium text-slate-400 text-[10px] uppercase block">Down</span>
                                   {item.spec_attributes.mir_down}
                                 </div>
-                              
                               </div>
-                            )}
 
+                            </div>
+                          
                           </div>
-                        </div>
+                        ) : (
+                          <div className="flex items-start gap-4">
+                          
+                            <input
+                              type="checkbox"
+                              name="sku_select"
+                              value={item.sku_id}
+                              checked={true} // Always checked for OTC items
+                              className="mt-1 h-4 w-4 accent-orange-500"
+                            />
+
+                            <div>
+                              <span className="block font-bold text-orange-300 text-base md:text-lg">
+                                {item.service_name}
+                              </span>
+                              
+                              <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-xs md:text-sm">
+                                &nbsp; {/* Placeholder for alignment */}
+                              </div>
+
+                            </div>
+                          
+                          </div>
+                        )}
 
                         <div className="md:text-right border-t md:border-t-0 pt-3 md:pt-0 border-white/10">
                           <span className="text-[10px] md:text-xs font-bold text-gray-400 block">
                             {priceLabel}
                           </span>
                           <span className="text-base md:text-lg font-black text-white">
-                            Rp {formatDecimal(item.unit_price)} 
+                            Rp {formatDecimal(item.sales_price)} 
                           </span>
                         </div>
                       </label>
@@ -349,14 +382,14 @@ function ProductConfigureContent() {
               <div className="p-2 bg-orange-500/10 border border-orange-500/20 rounded-lg text-orange-500">
                 <Calculator size={20} />
               </div>
-              <h3 className="text-xl font-bold text-white">Kalkulator Pesanan</h3>
+              <h3 className="text-xl font-bold text-white">Simulasi Harga Paket</h3>
             </div>
 
             <div className="space-y-6 mb-6 border-b border-white/10 pb-6">
               {/* Grup MRC - berisi produk-produk dengan biaya bulanan */}
               <div>
                 <span className="text-[10px] font-black uppercase tracking-widest text-orange-500 block mb-3">
-                  MRC · Biaya Bulanan
+                  Biaya Bulanan
                 </span>
                 {mrcItems.length > 0 ? (
                   <div className="space-y-2">
@@ -367,14 +400,14 @@ function ProductConfigureContent() {
                       >
                         <div className="min-w-0">
                           <span className="block text-sm text-gray-100 font-bold truncate">
-                            {item.sku_name}
+                            {item.service_name}
                           </span>
                           <span className="block text-[10px] uppercase tracking-widest text-gray-500">
-                            {territory}{selectedType ? ` · ${selectedType}` : ""}
+                            {territoryDict[item.territory_code]}{selectedType ? ` · ${selectedType}` : ""}
                           </span>
                         </div>
                         <span className="text-sm font-bold text-white whitespace-nowrap">
-                          Rp {formatDecimal(item.mrc)}
+                          Rp {formatDecimal(item.sales_price)} <span className="font-normal">/bln</span>
                         </span>
                       </div>
                     ))}
@@ -389,7 +422,7 @@ function ProductConfigureContent() {
               {/* Grup OTC - berisi produk-produk dengan biaya sekali bayar */}
               <div>
                 <span className="text-[10px] font-black uppercase tracking-widest text-orange-500 block mb-3">
-                  OTC · Sekali Bayar
+                  Sekali Bayar
                 </span>
                 {otcItems.length > 0 ? (
                   <div className="space-y-2">
@@ -400,14 +433,14 @@ function ProductConfigureContent() {
                       >
                         <div className="min-w-0">
                           <span className="block text-sm text-gray-100 font-bold truncate">
-                            {item.sku_name}
+                            {item.service_name}
                           </span>
                           <span className="block text-[10px] uppercase tracking-widest text-gray-500">
-                            {territory}{selectedType ? ` · ${selectedType}` : ""}
+                            {territoryDict[item.territory_code]}{selectedType ? ` · ${selectedType}` : ""}
                           </span>
                         </div>
                         <span className="text-sm font-bold text-white whitespace-nowrap">
-                          Rp {formatDecimal(item.otc)}
+                          Rp {formatDecimal(item.sales_price)}
                         </span>
                       </div>
                     ))}

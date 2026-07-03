@@ -200,6 +200,7 @@ export async function insertOrder(user_id, sku_id, session_id = 0) {
   return result.rows[0];
 }
 
+
 export async function deleteActiveOrder(user_id, sku_id, session_id = 0) {
   const checkProdId = await pool.query(
     ` select s.product_id from product_sku s 
@@ -251,6 +252,7 @@ export async function deleteActiveOrder(user_id, sku_id, session_id = 0) {
 
   return result.rows[0];
 }
+
 
 
 export async function sendOrderToSales(user_id, session_id=0) {

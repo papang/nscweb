@@ -6,7 +6,7 @@ import { cookies } from "next/headers";
 import { verifyToken } from "@/app/lib/auth";
 import jwt from "jsonwebtoken";
 
-import { getSKUByProductOrder, getSKUByProductSum } from "@/app/lib/repositories/product.repository";
+import { getSKUCurrentOrder, getSKUOrderSummaryByService } from "@/app/lib/repositories/service.repository";
 
 export async function GET(request: NextRequest) {
   try {
@@ -20,12 +20,12 @@ export async function GET(request: NextRequest) {
     const userid = user?.userId;
     // console.log("usernya:" + user);
 
-    const rec = await getSKUByProductOrder(userid, session_id);
-    const sum = await getSKUByProductSum(userid, session_id);
+    const rec = await getSKUCurrentOrder(userid, session_id);
+    const sum = await getSKUOrderSummaryByService(userid, session_id);
 
     let grandTotal = 0;
     for (const key in rec) {
-      grandTotal = grandTotal + Number(rec[key].unit_price);
+      grandTotal = grandTotal + Number(rec[key].sales_price);
     }
 
     if (!rec) {

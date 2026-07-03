@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { pool } from "@/app/lib/db";
-import { sendOrderToSales } from "@/app/lib/repositories/product.repository";
+import { sendOrderToSales } from "@/app/lib/repositories/service.repository";
 import { cookies } from "next/headers";
 import { verifyToken } from "@/app/lib/auth";
 

@@ -281,7 +281,7 @@ export default function ProductPage() {
                                 onClick={() => startOrdering(service.service_id, service.service_name)}
                                 className="w-full rounded-xl bg-orange-500 py-4 text-xs font-black uppercase tracking-widest text-black shadow-[0_0_15px_rgba(249,115,22,0.3)] flex items-center justify-center gap-2 hover:bg-orange-400 transition-all active:scale-95"
                               >
-                                <ShoppingCart size={16} /> Pilih Layanan
+                                <ShoppingCart size={16} /> Pilih Produk
                               </button>
                             </div>
                           )

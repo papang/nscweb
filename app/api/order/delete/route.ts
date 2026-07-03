@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { sendOrderToSales, deleteActiveOrder } from "@/app/lib/repositories/product.repository";
+import { sendOrderToSales, deleteActiveOrder } from "@/app/lib/repositories/service.repository";
 import { cookies } from "next/headers";
 import { verifyToken } from "@/app/lib/auth";
 
@@ -18,7 +18,7 @@ export async function POST(
     const body = await request.json();
     const { delskuid, userid } = body;
 
-    const order = await deleteActiveOrder(userid, delskuid);
+    const order = await deleteActiveOrder(userid, delskuid, "0");
 
     return NextResponse.json({
       success: true

@@ -147,7 +147,8 @@ export async function getSKUByProductNoOTC() {
 
 export async function getServiceLine() {
   const tmpresult = await pool.query(
-    ` select s.service_id sku_id, s.service_code, s.service_name, s.unit_price, 
+    ` select s.service_id sku_id, s.service_code, s.service_name, 
+      s.unit_price, s.sales_price,
       s.service_img, s.charge_type_code, s.hier_code, s.spec_attributes, 
       bw.service_name service_bw_name, t.service_code territory_code, 
       t.service_name territory_name, net.service_id net_service_id
@@ -155,23 +156,7 @@ export async function getServiceLine() {
       JOIN services bw ON s.service_parent_id=bw.service_id
       JOIN services t ON bw.service_parent_id=t.service_id
       JOIN services net ON t.service_parent_id=net.service_id
-      where s.hier_code = 'LINE' and s.isactive=1 
-      UNION
-      select s.service_id sku_id, s.service_code, s.service_name, s.unit_price, 
-      s.service_img, s.charge_type_code, s.hier_code, s.spec_attributes, 
-      bw.service_bw_name service_bw_name, t.territory_code territory_code, 
-      t.territory_name territory_name, net.service_id net_service_id
-      from services s 
-      JOIN services net ON s.service_parent_id=net.service_id, 
-      (
-        SELECT service_bw_name
-        FROM (VALUES ('Lite'), ('Dedicated'), ('Broadband')) AS service_bw(service_bw_name)
-      ) bw,  
-      (
-        SELECT territory_code, territory_name
-        FROM (VALUES ('M', 'Maritim'), ('L', 'Land')) AS service_ter(territory_code, territory_name)
-      ) t 
-      where s.hier_code = 'CPE' and s.isactive=1 
+      where s.hier_code in ('LINE', 'CPE') and s.isactive=1 
     `,
     []
   );
@@ -247,64 +232,41 @@ export async function insertOrder(user_id, sku_id, session_id = 0) {
   return result.rows[0];
 }
 
-export async function deleteActiveOrder(user_id, sku_id, session_id = 0) {
-  const checkProdId = await pool.query(
-    ` select s.product_id from product_sku s 
-      where s.sku_id=$1 and s.sku_id not in (260098, 260099) 
-    `, 
-    [sku_id]
-  );
-
-  const prodId = checkProdId.rows[0].product_id || 0;
-
-  let candSKUId = 0;
-
-  if(prodId == 1) {
-    candSKUId = 260098;
-  } else if(prodId == 2) {
-    candSKUId = 260099;
-  }
-
-
+export async function deleteActiveOrder(user_id, sku_id, session_id) {
   // Dihapus
   const result = await pool.query(
-    ` delete from order_product where user_id=$1 and sku_id=$2 and order_status_id=1
+    ` delete from order_items 
+      where user_id=$1 and ref_sku_id=$2 and session_id=$3 and order_status_id=1
       RETURNING user_id, sku_id
     `,
-    [user_id, sku_id]
+    [user_id, sku_id, session_id]
   );
-
-  // Check All product per product_id
-  const rescheck = await pool.query(
-    ` select o.sku_id, p.product_id, s.sku_name
-      from order_product o 
-      join product_sku s on o.sku_id=s.sku_id 
-      join products p on s.product_id=p.product_id
-      where o.user_id=$1 and o.order_status_id=1 
-        and p.product_id= $2 and o.sku_id not in (260098, 260099)
-    `,
-    [user_id, prodId]
-  );
-
-
-  if(! (rescheck.rowCount || 0 > 0)) {
-    const resultIncUT = await pool.query(
-      ` delete from order_product where user_id=$1 and sku_id=$2 and order_status_id=1 
-        RETURNING user_id, sku_id
-      `,
-      [user_id, candSKUId]
-    );
-  }
 
   return result.rows[0];
 }
 
 
-export async function sendOrderToSales(user_id, session_id=0) {
-  const orders = await getSKUByProductOrder(user_id);
+
+
+// ---- New Sales Order
+export async function insertNewOrder(user_id, session_id, sku_id, ref_sku_id, sku_code, sku_name, sales_price) {
+  const result = await pool.query(
+    ` insert into order_items(user_id, session_id, sku_id, ref_sku_id, sku_code, sku_name, sales_price) 
+      values($1, $2, $3, $4, $5, $6, $7)
+    `,
+    [user_id, session_id, sku_id, ref_sku_id, sku_code, sku_name, sales_price]
+  );
+
+  return result.rows[0];
+}
+
+
+
+export async function sendOrderToSales(user_id, session_id="0") {
+  const orders = await getSKUCurrentOrder(user_id, session_id);
   
   const result = await pool.query(
-    ` update order_product set order_status_id=2
+    ` update order_items set order_status_id=2
       where (user_id=$1 or session_id=$2) and order_status_id=1  
     `,
     [user_id, session_id]
@@ -354,6 +316,67 @@ export async function getSKUByProductOrder(user_id, session_id='0') {
 
   return result.rows;
 }
+
+export async function getSKUCurrentOrder(user_id, session_id='0') {
+  const result = await pool.query(
+    ` select o.order_item_id, o.sku_id, o.ref_sku_id, o.sku_code, 
+      o.sku_name, o.sales_price, o.sku_notes, o.sales_price, 
+      s.spec_attributes, s.charge_type_code, 
+      bw.service_name service_bw_name, 
+      t.service_code territory_code, t.service_name territory_name, 
+      net.service_id net_service_id, net.service_name net_service_name
+      from order_items o 
+      JOIN services s ON o.sku_id=s.service_id
+      JOIN services bw ON s.service_parent_id=bw.service_id
+      JOIN services t ON bw.service_parent_id=t.service_id
+      JOIN services net ON t.service_parent_id=net.service_id
+      where o.order_status_id=1 and (o.user_id=$1 or o.session_id=$2)
+      order by net.service_id, o.sku_id
+    `,
+    [user_id, session_id]
+  );
+
+  return result.rows;
+}
+
+
+export async function getSKUOrderSummaryByService(user_id, session_id='0') {
+  const result = await pool.query(
+    ` select net.service_id, net.service_name, net.service_icon, 
+      sum(o.sales_price) total_price
+      from order_items o 
+      JOIN services s ON o.sku_id=s.service_id
+      JOIN services bw ON s.service_parent_id=bw.service_id
+      JOIN services t ON bw.service_parent_id=t.service_id
+      JOIN services net ON t.service_parent_id=net.service_id
+      where o.order_status_id=1 and (o.user_id=$1 or o.session_id=$2)
+      group by net.service_id, net.service_name, net.service_icon
+      order by net.service_id
+    `,
+    [user_id, session_id]
+  );
+
+  return result.rows;
+}
+
+export async function getSKUOrderSummaryByChargeType(user_id, session_id='0') {
+  const result = await pool.query(
+    ` select s.charge_type_code, 
+      sum(o.sales_price) total_price
+      from order_items o 
+      JOIN services s ON o.sku_id=s.service_id
+      JOIN services bw ON s.service_parent_id=bw.service_id
+      JOIN services t ON bw.service_parent_id=t.service_id
+      JOIN services net ON t.service_parent_id=net.service_id
+      where o.order_status_id=1 and (o.user_id=$1 or o.session_id=$2)
+      group by s.charge_type_code
+    `,
+    [user_id, session_id]
+  );
+
+  return result.rows;
+}
+
 
 export async function getSKUByProductSum(user_id, session_id='0') {
   const result = await pool.query(

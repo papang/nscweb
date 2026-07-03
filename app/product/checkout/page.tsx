@@ -18,6 +18,7 @@ import { formatDecimal } from '@/app/utils/format';
 import Modal from "@/components/Modal";
 import DialogInfo from "@/components/DialogInfo";
 import { sendmail_order } from "@/app/lib/sendmail_order";
+import Swal from "sweetalert2";
 
 let userid = 34;
 
@@ -29,8 +30,6 @@ export function listSKUOrder() {
   useEffect(() => {
     fetch("/api/order").then((res) => res.json())
       .then((data) => {
-        // console.log("ini data");
-        // console.log(data.data);
         setListSKU(data.data);
         setProductSum(data.summary.byproduct);
         setTotalNum(data.summary.all);
@@ -116,6 +115,45 @@ export default function CheckoutPage() {
   };
 
 
+  const hndlrDelete = async (delskuid) => {
+  
+    Swal.fire({
+      title: "",
+      text: "Anda yakin ingin menghapus?",
+      icon: "question",
+      background: "#111",
+      color: "#fff",
+      showCancelButton: true,
+      confirmButtonColor: "#f97316",
+      cancelButtonColor: "#523232",
+      confirmButtonText: "Ya",
+      cancelButtonText: "Tidak",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        try {
+          const response = fetch("/api/order/delete",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                delskuid, userid
+              }),
+            }
+          );
+
+          window.location.href="/product/checkout";
+          
+        } catch (error) {
+
+        }
+        
+      } 
+    });
+  
+  };
+
 
   return (
     <main className="relative flex min-h-screen w-full flex-col bg-black text-gray-200 selection:bg-orange-500/30 overflow-x-hidden font-sans">
@@ -168,23 +206,39 @@ export default function CheckoutPage() {
                     listSKU.map((items) => (
                       <div>
                         <label
-                          key={items.sku_id}
-                          className={`relative flex flex-col md:flex-row md:items-center md:justify-between gap-4 
+                          key={`del-${items.sku_id}`}
+                          className={`relative flex flex-col md:flex-row md:items-center md:justify-between gap-3 
                               mb-5 px-5 py-2 rounded-xl transition-all 
-                              ${(items.prodstream_name == 'MRC Maritim') ? "bg-[#00A8B5]/20" : "bg-[#C2B280]/20"}
+                              ${(items.territory_code == 'M') ? "bg-[#00A8B5]/30" : (
+                                (items.territory_code == 'L') ? "bg-[#C2B280]/30" : "bg-[#C2CECE]/10"
+                              ) }
                               `}
                         >
                           <div className="flex items-center gap-4">
-                            <DeleteButton onClick={() => alert("Fitur hapus order akan segera diimplementasikan")} />
+                            <div className="w-[24px] h-[16px]">
+                              { (items.charge_type_code == "MRC") ? (
+                                  <DeleteButton onClick={() => {
+                                      hndlrDelete(items.sku_id);
+                                    }}  
+                                  />
+                                ) : ""
+                              }
+                            </div>
+                            
 
                             {/* Detail Spesifikasi */}
                             <div>
                               <span className="block font-bold text-orange-300 text-lg">{items.sku_name}</span>
                               <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-sm text-slate-600">
-                                <div className="text-white/80"><span className="font-medium text-slate-400 text-xs uppercase block">Up</span> {items.spec_mir_up}</div>
-                                <div className="text-white/80"><span className="font-medium text-slate-400 text-xs uppercase block">Down</span> {items.spec_mir_down}</div>
+                                { (items.charge_type_code == "MRC") ? (
+                                    <>
+                                      <div className="text-white/80"><span className="font-medium text-slate-400 text-xs uppercase block">Up</span> {items.spec_attributes.mir_up}</div>
+                                      <div className="text-white/80"><span className="font-medium text-slate-400 text-xs uppercase block">Down</span> {items.spec_attributes.mir_down}</div>
+                                    </>
+                                  ) : ""
+                                }
                                 <div className="col-span-2 mt-1">
-                                  <span className="font-medium text-slate-400 text-xs uppercase block">{items.prodstream_name} - {items.prodtype_name}</span>
+                                  <span className="font-medium text-slate-400 text-xs uppercase block">{items.territory_name} - {items.service_bw_name}</span>
                                   {/* <span className="text-blue-700 font-medium">plan.terminal</span> */}
                                 </div>
                               </div>
@@ -193,9 +247,15 @@ export default function CheckoutPage() {
 
                           {/* Harga */}
                           <div className="mt-4 md:mt-0 md:text-right border-t md:border-t-0 pt-3 md:pt-0 border-slate-100">
-                            <span className="text-xs md:text-sm leading-relaxed text-gray-300 block">Harga</span>
+                            <span className="text-xs md:text-sm leading-relaxed text-gray-300 block">
+                              { (items.charge_type_code == "MRC") ? (
+                                <span className="text-xs md:text-sm leading-relaxed text-gray-300 block"></span>
+                              ) : (
+                                <span className="text-xs md:text-sm leading-relaxed text-gray-300 block italic">One Time Charge</span>
+                              )}
+                            </span>
                             <span className="text-md font-bold text-white">
-                              Rp {formatDecimal(items.unit_price)}
+                              Rp {formatDecimal(items.sales_price)}
                             </span>
                           </div>
                         </label>
@@ -238,9 +298,9 @@ export default function CheckoutPage() {
                           <div key={index} className="flex justify-between gap-4 p-4 rounded-2xl bg-white/5 mb-2">
                             <div className="flex justify-start items-center gap-3">
                               <div className="text-gray-400 w-10"
-                                dangerouslySetInnerHTML={{ __html: items.product_icon }}
+                                dangerouslySetInnerHTML={{ __html: items.service_icon }}
                               />
-                              <h4 className="text-base text-white">{items.product_name}</h4>
+                              <h4 className="text-base text-white">{items.service_name}</h4>
                             </div>
                             <div className="flex items-end">
                               <span className="text-md font-bold text-white">Rp {formatDecimal(items.total_price)}</span>
