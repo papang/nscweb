@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 
 import { verifyUser } from "@/app/lib/repositories/user.repository";
 import { redirect } from "next/navigation";
+import http_headers from "@/app/lib/http_headers";
 
 export async function GET( request: NextRequest ) {
 
@@ -20,6 +21,9 @@ export async function GET( request: NextRequest ) {
       return NextResponse.json({
           success: true,
           message: "Verifikasi berhasil",
+        }, {
+          status: 200,
+          headers: http_headers,
         }
       );
 
@@ -29,7 +33,7 @@ export async function GET( request: NextRequest ) {
           success: false,
           message: "Verifikasi user Anda gagal.",
         },
-        { status: 401, }
+        { status: 401, headers: http_headers }
       );
 
 }

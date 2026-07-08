@@ -3,6 +3,7 @@ import { insertNewOrder } from "@/app/lib/repositories/service.repository";
 import { cookies } from "next/headers";
 import { verifyToken } from "@/app/lib/auth";
 import jwt from "jsonwebtoken";
+import http_headers from "@/app/lib/http_headers";
 
 
 // export async function POST(
@@ -65,6 +66,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       message: sku_mrc,
+    }, {
+      status: 200,
+      headers: http_headers,
     });
 
   } catch (error) {
@@ -78,6 +82,7 @@ export async function POST(request: NextRequest) {
       },
       {
         status: 500,
+        headers: http_headers,
       }
     );
   }

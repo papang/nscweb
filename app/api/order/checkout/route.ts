@@ -4,6 +4,7 @@ import { pool } from "@/app/lib/db";
 import { sendOrderToSales } from "@/app/lib/repositories/service.repository";
 import { cookies } from "next/headers";
 import { verifyToken } from "@/app/lib/auth";
+import http_headers from "@/app/lib/http_headers";
 
 export async function POST(
   request: Request
@@ -22,6 +23,9 @@ export async function POST(
     return NextResponse.json({
       success: true,
       data: order,
+    }, {
+      status: 200,
+      headers: http_headers,
     });
 
   } catch (error) {
@@ -34,7 +38,8 @@ export async function POST(
         message: "Failed to update order.",
       },
       {
-        status: 500,
+        status: 500, 
+        headers: http_headers,
       }
     );
   }

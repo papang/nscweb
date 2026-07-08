@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { getServiceCategory } from "@/app/lib/repositories/service.repository";
+import http_headers from "@/app/lib/http_headers";
 
 export async function GET() {
   try {
@@ -17,7 +18,7 @@ export async function GET() {
           message: "Empty product category",
         },
         {
-          status: 401,
+          status: 401, headers: http_headers,
         }
       );
     }
@@ -27,6 +28,8 @@ export async function GET() {
         success: true, 
         message: "",
         data: productCategory,
+      }, {
+        status: 200, headers: http_headers
       });
 
     return response;
@@ -39,7 +42,7 @@ export async function GET() {
         success: false,
         message: "Internal Server Error",
       },
-      { status: 500,  }
+      { status: 500, headers: http_headers }
     );
 
   }

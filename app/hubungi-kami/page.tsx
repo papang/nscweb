@@ -18,8 +18,8 @@ import { redirect } from "next/navigation";
 const contactInfo = [
   {
     icon: <Phone size={20} />,
-    title: "Telepon",
-    detail: "+62 8138 9955 512",
+    title: "Chat / Whatsapp only",
+    detail: "+62 816-903-007",
     desc: "Senin - Jumat, 09:00 - 18:00",
   },
   {
@@ -168,7 +168,7 @@ export default function ContactPage() {
                     <p className="text-lg font-bold text-white leading-tight mb-1 group-hover:text-orange-500 transition-colors">
                       {info.detail}
                     </p>
-                    <p className="text-[11px] text-gray-500 font-medium">
+                    <p className="text-[12px] text-gray-500 font-medium">
                       {info.desc}
                     </p>
                   </div>

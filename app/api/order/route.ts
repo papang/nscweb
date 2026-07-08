@@ -7,6 +7,7 @@ import { verifyToken } from "@/app/lib/auth";
 import jwt from "jsonwebtoken";
 
 import { getSKUCurrentOrder, getSKUOrderSummaryByService } from "@/app/lib/repositories/service.repository";
+import http_headers from "@/app/lib/http_headers";
 
 export async function GET(request: NextRequest) {
   try {
@@ -36,6 +37,7 @@ export async function GET(request: NextRequest) {
         },
         {
           status: 401,
+          headers: http_headers
         }
       );
     }
@@ -49,6 +51,9 @@ export async function GET(request: NextRequest) {
           "byproduct" : sum,
           "all" : grandTotal
         }
+      }, {
+        status: 200,
+        headers: http_headers
       });
 
     return response;
@@ -61,7 +66,7 @@ export async function GET(request: NextRequest) {
         success: false,
         message: "Internal Server Error"+error,
       },
-      { status: 500,  }
+      { status: 500, headers: http_headers }
     );
 
   }

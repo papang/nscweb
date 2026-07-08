@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 
 import { changePassword } from "@/app/lib/repositories/user.repository";
+import http_headers from "@/app/lib/http_headers";
 
 export async function POST(
   request: Request
@@ -18,6 +19,9 @@ export async function POST(
     return NextResponse.json({
       success: true,
       user: user,
+    }, {
+      status: 200,
+      headers: http_headers,
     });
 
   } catch (error) {
@@ -31,6 +35,7 @@ export async function POST(
       },
       {
         status: 500,
+        headers: http_headers,
       }
     );
   }

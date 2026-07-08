@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 
 import { getSKUByProductNoOTC } from "@/app/lib/repositories/service.repository";
+import http_headers from "@/app/lib/http_headers";
 
 export async function GET(request: Request) {
   try {
@@ -17,7 +18,7 @@ export async function GET(request: Request) {
           message: "Empty product",
         },
         {
-          status: 401,
+          status: 401, headers: http_headers
         }
       );
     }
@@ -27,6 +28,9 @@ export async function GET(request: Request) {
         success: true, 
         message: "",
         data: rec,
+      }, {
+        status: 200,
+        headers: http_headers
       });
 
     return response;
@@ -39,7 +43,7 @@ export async function GET(request: Request) {
         success: false,
         message: "Internal Server Error",
       },
-      { status: 500,  }
+      { status: 500, headers: http_headers }
     );
 
   }

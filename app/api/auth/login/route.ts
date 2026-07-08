@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 
 import { generateToken } from "@/app/lib/auth";
 import { findValidUser } from "@/app/lib/repositories/user.repository";
+import http_headers from "@/app/lib/http_headers";
 
 export async function POST(
   request: Request
@@ -26,6 +27,7 @@ export async function POST(
         },
         {
           status: 401,
+          headers: http_headers,
         }
       );
     }
@@ -50,6 +52,7 @@ export async function POST(
         },
         {
           status: 401,
+          headers: http_headers,
         }
       );
     }
@@ -68,6 +71,9 @@ export async function POST(
           username: user.username,
           email: user.email,
         },
+      }, {
+        status: 200,
+        headers: http_headers,
       });
 
     response.cookies.set({
@@ -90,11 +96,11 @@ export async function POST(
     return NextResponse.json(
       {
         success: false,
-        message:
-          "Internal Server Error",
+        message: "Internal Server Error",
       },
       {
         status: 500,
+        headers: http_headers,
       }
     );
   }

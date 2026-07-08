@@ -333,12 +333,12 @@ export default function Home() {
         </div>
       </section>
 
-      {/* --- SECTION 6: Pertahanan & Keamanan Negara (Defense) --- */}
+      {/* --- SECTION 6: Secure Communication --- */}
       <section className="relative h-screen w-full overflow-hidden">
         <div className="absolute inset-0 z-0">
           <Image
             src="/pertahanan.webp"
-            alt="Pertahanan & Keamanan Negara (Defense)"
+            alt="Secure Communication"
             fill
             className="object-cover object-center"
           />
@@ -348,7 +348,7 @@ export default function Home() {
         <div className="relative z-10 flex h-full flex-col justify-start px-8 pt-32 md:px-16 md:pt-40 lg:px-24">
           <div className="max-w-xl text-left">
             <h2 className="mb-6 text-3xl font-bold uppercase leading-tight tracking-tight text-white drop-shadow-md md:text-4xl">
-              Pertahanan & Keamanan Negara (Defense)
+              Secure Communication
             </h2>
             <p className="mb-6 text-base leading-relaxed text-gray-200 drop-shadow-md md:text-lg">
               Komunikasi Taktis Berlapis dengan Proteksi Ekstrem Solusi vital
