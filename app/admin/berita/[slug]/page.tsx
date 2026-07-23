@@ -1,10 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState, use } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Edit2, Trash2, X, FileText, Upload, Link as LinkIcon, Globe, Rss } from "lucide-react";
 
 // TODO (Backend): Fetch data berita dari API
+interface News {
+  newsId: number,
+  newsCatId: number,
+  newsTitle: string,
+  imgUrl: string,
+  authorBy: string,
+  newsContent: string,
+  isPublished: number,
+  createdBy: string,
+  createdAt: string,
+  updatedBy: string,
+  updatedAt: string,
+  statVisit: number,
+  tags: string[],
+}
+
 const initialNews = [
   { 
     id: 1, 
@@ -33,13 +49,54 @@ const initialNews = [
 
 const categories = ['Teknologi', 'Satelit', 'Bisnis', 'Tutorial', 'Update', 'Event'];
 
-export default function KelolaBeritaPage() {
-  const [news, setNews] = useState(initialNews);
+export default function KelolaBeritaPage({ params, }: { params: Promise<{ slug: string }>}) {
+
+  const { slug } = use(params);
+
+  const dateFormatter = new Intl.DateTimeFormat("en-US", {
+    dateStyle: "medium",
+    timeZone: "UTC", // Lock the timezone to avoid hydration errors
+  });
+
+  useEffect(() => {
+    if(slug=='insight') {
+      setNewsType('in');
+      setTitleMenu("Berita (Insight)");
+      setTitleDescription("Berita yang dimuat dan di-publish oleh internal NSC");
+    } else {
+      setNewsType('ex');
+      setTitleMenu("Berita Eksternal");
+      setTitleDescription("Berita pilihan dari berbagai sumber eksternal");
+    }
+
+    const reloadNews = async () => {
+      const response = await fetch("/api/news/list", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({}),
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        setNews(result.result);
+      }
+    };
+
+    reloadNews();
+  }, []);
+
+  
+
+  const [news, setNews] = useState<News[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState<"add" | "edit">("add");
 
   // State Form
-  const [newsType, setNewsType] = useState<"Internal" | "External">("Internal");
+  const [newsType, setNewsType] = useState<"in" | "ex">("in");
+  const [titleMenu, setTitleMenu] = useState("");
+  const [titleDescription, setTitleDescription] = useState("");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
 
@@ -48,19 +105,18 @@ export default function KelolaBeritaPage() {
       {/* Header Halaman */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-2">Kelola Berita</h1>
-          <p className="text-sm font-medium text-gray-400">Buat berita resmi NSC atau tambahkan Industry Feed (Eksternal).</p>
+          <h1 className="text-3xl font-bold text-white mb-2">{titleMenu}</h1>
+          <p className="text-sm font-medium text-gray-400">{titleDescription}</p>
         </div>
         <button 
           onClick={() => { 
             setModalType("add"); 
-            setNewsType("Internal");
             setImagePreview(null);
             setIsModalOpen(true); 
           }}
           className="flex items-center gap-2 px-6 py-3 bg-orange-500 text-black text-xs font-black uppercase tracking-widest rounded-xl hover:bg-orange-400 transition-all active:scale-95 shadow-[0_0_15px_rgba(249,115,22,0.3)]"
         >
-          <Plus size={16} /> Tulis Berita
+          <Plus size={16} /> Tambah Berita
         </button>
       </div>
 
@@ -71,7 +127,7 @@ export default function KelolaBeritaPage() {
             <tr className="bg-[#0a0a0a] border-b border-white/10 text-xs font-black uppercase tracking-widest text-gray-500">
               <th className="p-5 font-medium w-16">ID</th>
               <th className="p-5 font-medium">Judul Artikel</th>
-              <th className="p-5 font-medium">Tipe / Sumber</th>
+              <th className="p-5 font-medium">Author</th>
               <th className="p-5 font-medium">Tanggal</th>
               <th className="p-5 font-medium">Status</th>
               <th className="p-5 font-medium text-center">Aksi</th>
@@ -79,33 +135,37 @@ export default function KelolaBeritaPage() {
           </thead>
           <tbody className="text-sm font-medium text-gray-300">
             {news.map((item) => (
-              <tr key={item.id} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
-                <td className="p-5 text-gray-500">#{item.id}</td>
+              <tr key={item.newsId} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
+                <td className="p-5 text-gray-500">#{item.newsId}</td>
                 <td className="p-5 text-white font-bold flex items-center gap-3 min-w-[300px]">
                   <div className="w-8 h-8 rounded-lg bg-white/5 text-gray-400 flex items-center justify-center flex-shrink-0">
                     <FileText size={16} />
                   </div>
-                  <span className="line-clamp-1">{item.title}</span>
+                  <span className="line-clamp-1">{item.newsTitle}</span>
                 </td>
                 <td className="p-5">
-                  {item.type === "Internal" ? (
-                    <span className="flex items-center gap-1 text-[10px] font-bold text-orange-500 bg-orange-500/10 px-2 py-1 rounded-md w-max border border-orange-500/20 uppercase tracking-widest">
-                      <Globe size={12} /> NSC: {item.category}
-                    </span>
-                  ) : (
+                  
+                    {item.authorBy}
+                  
+                  {/* {item.type === "Internal" ? ( */}
+                    {/* <span className="flex items-center gap-1 text-[10px] font-bold text-orange-500 bg-orange-500/10 px-2 py-1 rounded-md w-max border border-orange-500/20 uppercase tracking-widest">
+                      <Globe size={12} /> NSC: {item.newsCatId}
+                    </span> */}
+                  {/* ) : (
                     <span className="flex items-center gap-1 text-[10px] font-bold text-blue-400 bg-blue-500/10 px-2 py-1 rounded-md w-max border border-blue-500/20 uppercase tracking-widest">
                       <Rss size={12} /> {item.sourceName}
                     </span>
-                  )}
+                  )} */}
                 </td>
-                <td className="p-5">{item.date}</td>
+                <td className="p-5">{item.createdAt}</td>
                 <td className="p-5">
                   <span className={`px-3 py-1 text-[10px] uppercase tracking-wider font-bold rounded-md border ${
-                    item.status === 'Published' 
+                    item.isPublished == 1 
                       ? 'bg-green-500/10 border-green-500/20 text-green-500' 
                       : 'bg-yellow-500/10 border-yellow-500/20 text-yellow-500'
                   }`}>
-                    {item.status}
+                    published
+                    {/* {item.status} */}
                   </span>
                 </td>
                 <td className="p-5">
@@ -113,8 +173,8 @@ export default function KelolaBeritaPage() {
                     <button 
                       onClick={() => { 
                         setModalType("edit"); 
-                        setNewsType(item.type as "Internal" | "External");
-                        setImagePreview(item.image);
+                        // setNewsType(item.type as "Internal" | "External");
+                        setImagePreview(item.imgUrl);
                         setIsModalOpen(true); 
                       }}
                       className="p-2 rounded-lg bg-blue-500/10 text-blue-500 hover:bg-blue-500 hover:text-white transition-all"
@@ -140,7 +200,7 @@ export default function KelolaBeritaPage() {
             
             <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto custom-scrollbar bg-[#111111] border border-white/10 rounded-3xl shadow-2xl p-8">
               <div className="flex justify-between items-center mb-6 sticky top-0 bg-[#111111] z-10 py-2 border-b border-white/10">
-                <h2 className="text-2xl font-bold text-white">{modalType === "add" ? "Tulis Berita Baru" : "Edit Berita"}</h2>
+                <h2 className="text-2xl font-bold text-white">{modalType === "add" ? "Berita Baru" : "Edit Berita"}</h2>
                 <button onClick={() => setIsModalOpen(false)} className="text-gray-500 hover:text-white"><X size={24} /></button>
               </div>
 
@@ -148,22 +208,22 @@ export default function KelolaBeritaPage() {
               <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); setIsModalOpen(false); }}>
                 
                 {/* PILIHAN TIPE BERITA */}
-                <div className="flex gap-4 p-2 bg-black border border-white/10 rounded-xl">
+                {/* <div className="flex gap-4 p-2 bg-black border border-white/10 rounded-xl">
                   <button 
                     type="button" 
-                    onClick={() => setNewsType("Internal")}
-                    className={`flex-1 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all ${newsType === "Internal" ? "bg-orange-500 text-black" : "text-gray-500 hover:text-white"}`}
+                    onClick={() => setNewsType("in")}
+                    className={`flex-1 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all ${newsType === "in" ? "bg-orange-500 text-black" : "text-gray-500 hover:text-white"}`}
                   >
                     Berita Internal NSC
                   </button>
                   <button 
                     type="button" 
-                    onClick={() => setNewsType("External")}
-                    className={`flex-1 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all ${newsType === "External" ? "bg-orange-500 text-black" : "text-gray-500 hover:text-white"}`}
+                    onClick={() => setNewsType("ex")}
+                    className={`flex-1 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all ${newsType === "ex" ? "bg-orange-500 text-black" : "text-gray-500 hover:text-white"}`}
                   >
                     Industry Feed (Eksternal)
                   </button>
-                </div>
+                </div> */}
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {/* KOLOM KIRI (GAMBAR) */}
@@ -230,7 +290,7 @@ export default function KelolaBeritaPage() {
                     </div>
 
                     {/* FIELD KHUSUS INTERNAL NSC */}
-                    {newsType === "Internal" && (
+                    {newsType === "in" && (
                       <>
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                           <div>
@@ -256,7 +316,7 @@ export default function KelolaBeritaPage() {
                     )}
 
                     {/* FIELD KHUSUS EXTERNAL FEED */}
-                    {newsType === "External" && (
+                    {newsType === "ex" && (
                       <>
                         <div className="grid grid-cols-2 gap-4">
                           <div>

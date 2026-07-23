@@ -39,41 +39,43 @@ const externalFeeds = [
     id: 101, 
     source: "Kompas.com", 
     sourceIcon: <Newspaper size={14} />, 
-    title: "Pemerintah Targetkan Seluruh Desa Terkoneksi Internet Satelit di 2027", 
-    excerpt: "Kementerian Kominfo menggenjot pemerataan akses internet di daerah 3T menggunakan konstelasi satelit LEO untuk percepatan digitalisasi nasional.", 
-    time: "3 Jam lalu", 
-    url: "https://www.kompas.com/tekno", 
-    img: "/particle2.webp" 
+    title: "BRIN: Satelit NEO-1 Kantongi TKDN 65 Persen, Siap Meluncur Januari 2027", 
+    excerpt: "Badan Riset dan Inovasi Nasional (BRIN) mengungkapkan satelit Nusantara Earth Observation-1 (NEO-1) yang dijadwalkan meluncur pada Januari 2027 memiliki tingkat komponen dalam negeri (TKDN) sekitar 65 persen", 
+    time: "8 Jul 2026", 
+    url: "https://nasional.kompas.com/read/2026/07/08/18085691/brin-satelit-neo-1-kantongi-tkdn-65-persen-siap-meluncur-januari-2027", 
+    img: "/news/news_kompas.jpg" 
   },
   { 
     id: 102, 
     source: "LinkedIn", 
     sourceIcon: <Briefcase size={14} />, 
-    title: "Syal Pratama membagikan pemikiran tentang masa depan LEO di Indonesia.", 
-    excerpt: "\"Infrastruktur fiber optik memang kuat, namun untuk topografi Indonesia yang berpulau, satelit LEO adalah jawaban paling logis dan efisien saat ini.\"", 
-    time: "5 Jam lalu", 
-    url: "https://www.linkedin.com/feed", 
-    img: null // Contoh postingan tanpa gambar besar
+    title: "Starlink: Membuka Pintu Konektivitas Global", 
+    excerpt: "Starlink membawa revolusi dalam dunia digital dengan memberikan akses cepat dan luas ke wilayah yang sebelumnya sulit dijangkau. Dengan teknologi yang terus berkembang, Starlink memberikan koneksi yang lebih baik untuk masa depan yang lebih terhubung. \
+      Teknologi Starlink menghadirkan banyak keunggulan yang menjadikannya solusi ideal, baik untuk kebutuhan pribadi maupun bisnis. Berikut merupakan berbagai keunggulan utama dari layanan Starlink.", 
+    time: "1 year ago", 
+    url: "https://www.linkedin.com/posts/starlink-menunjung-revolusi-konektivitas-ugcPost-7283443136628998144-YsRQ/", 
+    img: "/news/news_linkedin.jpg" 
   },
   { 
     id: 103, 
     source: "Tech in Asia", 
     sourceIcon: <Globe size={14} />, 
-    title: "Startup Telekomunikasi Satelit Asia Tenggara Catat Pendanaan Rekor", 
-    excerpt: "Tren investasi di sektor space-tech dan telekomunikasi satelit melonjak tajam seiring meningkatnya permintaan konektivitas B2B di wilayah rural.", 
-    time: "1 Hari lalu", 
-    url: "#", 
-    img: "/statis.webp" 
+    title: "Indonesia launches N5 satellite to boost internet in remote areas", 
+    excerpt: "Indonesia has launched the Nusantara Lima (N5) satellite to boost internet coverage across the country, especially in remote and underserved areas. \
+      The satellite, owned by PT Satelit Nusantara Lima, a subsidiary of PT Pasifik Satelit Nusantara, was developed with partners including Boeing Satellite Systems, Hughes Network Systems, and SpaceX.", 
+    time: "14 Sep 2025", 
+    url: "https://www.techinasia.com/news/indonesia-launches-n5-satellite-to-boost-internet-in-remote-areas", 
+    img: "/news/news_techinasia.webp" 
   },
   { 
     id: 104, 
     source: "DetikNet", 
     sourceIcon: <Newspaper size={14} />, 
-    title: "Mengenal Perbedaan Satelit LEO, MEO, dan GEO untuk Kebutuhan Internet", 
-    excerpt: "Banyak yang belum tahu, ini alasan mengapa satelit LEO (Low Earth Orbit) memberikan latensi yang jauh lebih cepat untuk bermain game dan video call.", 
-    time: "2 Hari lalu", 
-    url: "#", 
-    img: "/particle1.webp" 
+    title: "Indonesia Siapkan Satelit LEO, Tak Cuma Andalkan Starlink", 
+    excerpt: "Pemerintah mengungkap operator satelit nasional tengah memproses pengembangan satelit Low Earth Orbit (LEO). Saat ini, proses pengajuan orbit dan frekuensi satelit tersebut telah diajukan ke International Telecommunication Union (ITU) sebagai bagian dari tahapan sebelum satelit dapat diluncurkan.", 
+    time: "8 Jul 2026", 
+    url: "https://inet.detik.com/law-and-policy/d-8565860/indonesia-siapkan-satelit-leo-tak-cuma-andalkan-starlink", 
+    img: "/news/news_detikinet.jpeg" 
   },
 ];
 
@@ -111,14 +113,18 @@ export default function SimpleNews() {
         {/* Header & Search */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-6">
           <h1 className="text-4xl font-bold tracking-tight text-white">Berita & <span className="text-orange-500">Insight</span></h1>
-          <div className="relative w-full md:w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
-            <input 
-              type="text" 
-              placeholder="Cari berita..." 
-              className="w-full bg-[#111111] border border-white/10 rounded-full py-2 pl-10 pr-4 text-sm outline-none focus:border-orange-500 focus:bg-[#1a1a1a] transition-all text-white placeholder-gray-500"
-            />
-          </div>
+          
+          {activeTab === "nsc" && (
+            <div className="relative w-full md:w-64">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
+              <input 
+                type="text" 
+                placeholder="Cari berita..." 
+                className="w-full bg-[#111111] border border-white/10 rounded-full py-2 pl-10 pr-4 text-sm outline-none focus:border-orange-500 focus:bg-[#1a1a1a] transition-all text-white placeholder-gray-500"
+              />
+            </div>
+          )}
+          
         </div>
 
         {/* --- TAB SWITCHER (NSC vs FEED) --- */}
@@ -202,17 +208,17 @@ export default function SimpleNews() {
 
               {/* KOLOM KANAN (Kategori & Populer) */}
               <div className="space-y-12">
-                <section className="bg-[#111111] p-6 rounded-[32px] border border-white/10 shadow-2xl backdrop-blur-md">
+                {/* <section className="bg-[#111111] p-6 rounded-[32px] border border-white/10 shadow-2xl backdrop-blur-md">
                   <h3 className="text-lg font-bold text-white border-b border-white/10 pb-4 mb-6">Paling Populer</h3>
                   <div className="space-y-6">
-                    {[1, 2, 3].map((i) => (
+                    {[1, 2, 3 ].map((i) => (
                       <div key={i} className="flex gap-4 cursor-pointer group">
                         <span className="text-2xl font-black text-gray-700 group-hover:text-orange-500 transition-colors">0{i}</span>
                         <p className="text-sm font-medium leading-snug text-gray-400 group-hover:text-orange-400 transition-colors">Bagaimana satelit LEO bekerja di cuaca ekstrem?</p>
                       </div>
                     ))}
                   </div>
-                </section>
+                </section> */}
 
                 <section className="bg-[#111111] p-6 rounded-[32px] border border-white/10 shadow-2xl backdrop-blur-md">
                   <h3 className="text-lg font-bold text-white mb-6">Kategori</h3>

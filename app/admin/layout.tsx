@@ -1,21 +1,35 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation"; // Tambahkan useRouter
-import { Package, Newspaper, LogOut, LayoutDashboard } from "lucide-react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation"; // Tambahkan useRouter
+import { Package, Newspaper, LogOut, LayoutDashboard, ChevronRight, ChevronDown } from "lucide-react";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const router = useRouter();
+
+  const toggleSubMenu = async (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
+    const elId = event.currentTarget.id; 
+    const submenu = document.getElementById("sub_" + elId);
+    if(submenu) {
+      submenu?.classList.toggle('hidden');
+    }
+  }
 
   if (pathname === "/admin/login") {
     return <>{children}</>;
   }
 
   const menuItems = [
-    { name: "Dashboard", icon: <LayoutDashboard size={18} />, path: "/admin" },
-    { name: "Kelola Produk", icon: <Package size={18} />, path: "/admin/produk" },
-    { name: "Kelola Berita", icon: <Newspaper size={18} />, path: "/admin/berita" },
+    // { name: "Dashboard", icon: <LayoutDashboard size={18} />, path: "/admin" },
+    { id: "m_news", name: "Berita", icon: <Newspaper size={18} />, path: "", sub: [
+      { id: "m_news_insight", name: "Berita (Insight)", icon: "", path: "/admin/berita/insight" },
+      { id: "m_news_ekstern", name: "Berita Eksternal", icon: "", path: "/admin/berita/ekstern" },
+    ]},
+    // { name: "Karir", icon: <Package size={18} />, path: "/admin/karir" },
+    { id: "m_produk", name: "Produk", icon: <Package size={18} />, path: "/admin/produk" },
+    
   ];
 
   // --- FUNGSI LOGOUT ---
@@ -42,17 +56,41 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           {menuItems.map((item) => {
             const isActive = pathname === item.path;
             return (
-              <Link 
-                key={item.name} 
-                href={item.path}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${
-                  isActive 
-                    ? "bg-orange-500/10 text-orange-500 border border-orange-500/20" 
-                    : "text-gray-400 hover:text-white hover:bg-white/5 border border-transparent"
-                }`}
-              >
-                {item.icon} {item.name}
-              </Link>
+              <div key={item.name}>
+                <Link
+                  id={item.id} onClick={(e)=> void toggleSubMenu(e)}
+                  href={item.path}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${
+                    isActive 
+                      ? "bg-orange-500/10 text-orange-500 border border-orange-500/20" 
+                      : "text-gray-400 hover:text-white hover:bg-white/5 border border-transparent"
+                  }`}
+                >
+                  {item.icon} {item.name}
+                </Link>
+                  {(item.sub) ? (
+                    <div className="" id={`sub_${item.id}`}>
+                    { item.sub.map((subitem) => {
+                        const isActive = pathname === subitem.path;
+                        return (
+                          <Link 
+                            key={subitem.name} 
+                            href={subitem.path}
+                            className={`flex items-center gap-3 ml-7 px-2 py-3 rounded-xl text-sm font-bold transition-all ${
+                              isActive 
+                                ? "bg-orange-500/10 text-orange-500 border border-orange-500/20" 
+                                : "text-gray-400 hover:text-white hover:bg-white/5 border border-transparent"
+                            }`}
+                          >
+                            {subitem.icon} {subitem.name}
+                          </Link>
+                        )
+                      })
+                    }
+                    </div>
+                  ) : "" 
+                  }
+              </div>
             );
           })}
         </nav>
