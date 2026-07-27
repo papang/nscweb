@@ -5,10 +5,26 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Edit2, Trash2, X, PackageOpen, Globe, Zap, Satellite, MonitorCheck, ShieldCheck, Cpu, Wifi, Upload } from "lucide-react";
 import Swal from "sweetalert2";
 
-// Data Type
-interface ServiceCategory {
-  catId: number, catName: string, description: string, ordNum: number
+const formatDateTime: Intl.DateTimeFormatOptions = {
+  timeZone: "UTC",
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false // Forces 24-hour format
 }
+
+// Data Type
+interface GalleryGroup {
+  groupId: number, groupName: string, description: string, ordNum: number
+}
+interface Gallery {
+  galId: number, groupId: number, groupName: string, galTitle: string, galType: string, 
+  srcUrl: string, thumbnailUrl: string, createdBy: string, updatedBy: string, createdAt: string, updatedAt: string
+}
+
+
 
 // TODO (Backend): Fetch data produk dari API
 const initialProducts = [
@@ -48,14 +64,15 @@ const ICON_MAP: Record<string, React.ReactNode> = {
   Zap: <Zap size={16} />,
 };
 
-export default function KelolaProdukPage() {
+export default function KelolaGaleriPage() {
 
   useEffect(() => {
-      reloadCategory();
+      reloadGroup();
+      reloadData();
     }, []);
 
-  const reloadCategory = async () => {
-    const response = await fetch("/api/service/cat/list", {
+  const reloadGroup = async () => {
+    const response = await fetch("/api/gallery/group/list", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -65,53 +82,59 @@ export default function KelolaProdukPage() {
 
     const result = await response.json();
     if (result.success) {
-      setCategories(result.result);
+      setGroups(result.result);
     }
   };
 
-  const [categories, setCategories] = useState<ServiceCategory[]>([]);
-  const [selCategory, setSelCategory] = useState<ServiceCategory | null>(null);
-  const [isCatModalOpen, setIsCatModalOpen] = useState(false);
-  const [catModalType, setCatModalType] = useState<"add" | "edit">("add");
+  const reloadData = async () => {
+    const response = await fetch("/api/gallery/list", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({}),
+    });
 
-  const [products, setProducts] = useState(initialProducts);
+    const result = await response.json();
+    if (result.success) {
+      setProducts(result.result);
+    }
+  };
+
+  const [groups, setGroups] = useState<GalleryGroup[]>([]);
+  const [selGroup, setSelGroup] = useState<GalleryGroup | null>(null);
+  const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
+  const [groupModalType, setGroupModalType] = useState<"add" | "edit">("add");
+
+  const [products, setProducts] = useState<Gallery[]>([]);
   const [isProdModalOpen, setIsProdModalOpen] = useState(false);
   const [prodModalType, setProdModalType] = useState<"add" | "edit">("add");
-
-  // State Form Dinamis
-  const [specs, setSpecs] = useState<string[]>([""]);
-  const [selectedIcon, setSelectedIcon] = useState<string>("Satellite");
+  const typegallery = ["video", "image"];
   
   // State Drag & Drop Gambar
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
 
-  // Helper Spesifikasi Dinamis
-  const handleAddSpec = () => setSpecs([...specs, ""]);
-  const handleRemoveSpec = (index: number) => setSpecs(specs.filter((_, i) => i !== index));
-  const handleSpecChange = (index: number, value: string) => {
-    const newSpecs = [...specs];
-    newSpecs[index] = value;
-    setSpecs(newSpecs);
-  };
 
-  const hndlSubmitCat = async (e: React.FormEvent<HTMLFormElement>) => {
+  const hndlSubmitGroup = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
 
     // === TAMBAH KATEGORI ===
-    if(catModalType==="add") {
+    if(groupModalType==="add") {
 
-      const maxCatId = Math.max(...categories.map(item => item.catId));
+      let maxGroupId = 0;
+      if(groups.length > 0)
+        maxGroupId = Math.max(...groups.map(item => item.groupId));
 
-      const response = await fetch("/api/service/cat/ins", {
+      const response = await fetch("/api/gallery/group/ins", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          catId: (maxCatId + 1), 
-          catName: formData.get("cat_name"), 
+          groupId: (maxGroupId + 1), 
+          groupName: formData.get("group_name"), 
           ordNum: formData.get("ord_num"), 
         }),
       });
@@ -126,22 +149,22 @@ export default function KelolaProdukPage() {
             color: "#fff",
             confirmButtonColor: "#f97316",
           }).then(() => {
-            reloadCategory();
+            reloadGroup();
           });
       }
     }
     
     // === EDIT KATEGORI ===
-    if(catModalType==="edit") {
+    if(groupModalType==="edit") {
 
-      const response = await fetch("/api/service/cat/upd", {
+      const response = await fetch("/api/gallery/group/upd", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          catId: selCategory?.catId, 
-          catName: formData.get("cat_name"), 
+          groupId: selGroup?.groupId, 
+          groupName: formData.get("group_name"), 
           ordNum: formData.get("ord_num"), 
         }),
       });
@@ -156,16 +179,16 @@ export default function KelolaProdukPage() {
             color: "#fff",
             confirmButtonColor: "#f97316",
           }).then(() => {
-            reloadCategory();
+            reloadGroup();
           });
       }
     }
     
-    setIsCatModalOpen(false);
+    setIsGroupModalOpen(false);
 
   }
 
-  const hndlDeleteCat = async (catId: number) => {
+  const hndlDeleteGroup = async (groupId: number) => {
       Swal.fire({
         title: "",
         text: "Anda yakin ingin menghapus?",
@@ -180,12 +203,12 @@ export default function KelolaProdukPage() {
       })
       .then(async (result) => {
         if (result.isConfirmed) {
-          const response = await fetch("/api/service/cat/del", {
+          const response = await fetch("/api/gallery/group/del", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({"catId": catId }),
+            body: JSON.stringify({"groupId": groupId }),
           });
 
           const resultw = await response.json();
@@ -198,12 +221,150 @@ export default function KelolaProdukPage() {
               color: "#fff",
               confirmButtonColor: "#f97316",
             }).then(() => {
-              reloadCategory();
+              reloadGroup();
             });
           }
         }
       })
     
+  }
+
+
+  const hndlDeleteData = async (galId: number) => {
+      Swal.fire({
+        title: "",
+        text: "Anda yakin ingin menghapus?",
+        icon: "question",
+        background: "#111",
+        color: "#fff",
+        showCancelButton: true,
+        confirmButtonColor: "#f97316",
+        cancelButtonColor: "#523232",
+        confirmButtonText: "Ya",
+        cancelButtonText: "Tidak",
+      })
+      .then(async (result) => {
+        if (result.isConfirmed) {
+          const response = await fetch("/api/gallery/del", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({"galId": galId }),
+          });
+
+          const resultw = await response.json();
+          if (resultw.success) {
+            Swal.fire({
+              title: "",
+              text: "Data Anda telah dihapus",
+              icon: "success",
+              background: "#111",
+              color: "#fff",
+              confirmButtonColor: "#f97316",
+            }).then(() => {
+              reloadData();
+            });
+          }
+        }
+      })
+    
+  }
+
+
+  const hndlSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    let bodysend = {}
+
+    if(prodModalType==="add") {
+    
+      // if(chgFileUpload) {
+
+      //   const resUpload = await uploadFileAction(formData);
+      //   if (resUpload.success) {
+      //     bodysend = {
+      //       srcType: "IN", newsCatId: fieldNewsCatId, newsTitle: fieldNewsTitle, 
+      //       authorBy: fieldAuthor, newsContent: fieldContent, createdBy: fieldAuthor, 
+      //       imgUrl: resUpload.filepath, isPublished: fieldNewsStatus,
+      //       isHeadline: fieldIsHeadline,
+      //     };
+      //   } 
+      // } else {
+        bodysend = {
+          
+        };
+      // }
+      
+
+      const response = await fetch("/api/gallery/ins", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(bodysend),
+      });
+
+      const result = await response.json();
+      if (result.success) {
+          Swal.fire({
+            title: "",
+            text: "Data Anda telah berhasil diinput",
+            icon: "success",
+            background: "#111",
+            color: "#fff",
+            confirmButtonColor: "#f97316",
+          }).then(() => {
+            reloadData();
+          });
+      }
+    }
+
+    if(prodModalType==="edit") {
+            
+      // if(chgFileUpload) {
+        
+      //   const resUpload = await uploadFileAction(formData);
+      //   if (resUpload.success) {
+          
+      //     bodysend = {
+      //       srcType: "IN", newsId:selectedNews?.newsId, newsCatId: fieldNewsCatId, newsTitle: fieldNewsTitle, 
+      //       authorBy: fieldAuthor, newsContent: fieldContent, updatedBy: fieldAuthor, 
+      //       imgUrl: resUpload.filepath, isPublished: fieldNewsStatus,
+      //       isHeadline: fieldIsHeadline,
+      //     };
+      //   } 
+      // } else {
+        bodysend = {
+          
+        };
+      // }
+
+      const response = await fetch("/api/gallery/upd", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(bodysend),
+      });
+
+      const result = await response.json();
+      if (result.success) {
+          Swal.fire({
+            title: "",
+            text: "Data Anda telah diperbarui",
+            icon: "success",
+            background: "#111",
+            color: "#fff",
+            confirmButtonColor: "#f97316",
+          }).then(() => {
+            reloadData();
+          });
+      }
+    }
+
+    setIsProdModalOpen(false);
+
   }
 
 
@@ -214,35 +375,35 @@ export default function KelolaProdukPage() {
       <section>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div>
-            <h2 className="text-2xl font-bold text-white mb-1">Kategori</h2>
-            <p className="text-sm font-medium text-gray-400">Pengaturan kategori layanan.</p>
+            <h2 className="text-2xl font-bold text-white mb-1">Kelompok</h2>
+            <p className="text-sm font-medium text-gray-400">Pengaturan kelompok Gallery pada etalase web.</p>
           </div>
           <button 
-            onClick={() => { setCatModalType("add"); setIsCatModalOpen(true); setSelCategory(null); }}
+            onClick={() => { setGroupModalType("add"); setIsGroupModalOpen(true); setSelGroup(null); }}
             className="flex items-center gap-2 px-4 py-2 bg-[#111111] border border-white/10 text-white text-xs font-black uppercase tracking-widest rounded-xl hover:border-orange-500 hover:text-orange-500 transition-all active:scale-95"
           >
-            <Plus size={16} /> Tambah Kategori
+            <Plus size={16} /> Tambah Kelompok
           </button>
         </div>
 
         <div className="flex flex-wrap gap-3">
-          {categories.map((cat) => (
-            <div key={cat?.catId} className="flex items-center gap-3 px-4 py-2 bg-[#0a0a0a] border border-white/30 rounded-xl hover:border-orange-500/70 cursor-pointer">
+          {groups.map((gitem) => (
+            <div key={gitem?.groupId} className="flex items-center gap-3 px-4 py-2 bg-[#0a0a0a] border border-white/30 rounded-xl hover:border-orange-500/70 cursor-pointer">
               
               <div className="flex items-center gap-1 border-l border-white/30 pl-3 cursor-pointer">
                 <button 
                   onClick={() => { 
-                    setSelCategory(cat);
-                    setCatModalType("edit"); setIsCatModalOpen(true); 
+                    setSelGroup(gitem);
+                    setGroupModalType("edit"); setIsGroupModalOpen(true); 
                   }}
                 >
-                  <span className="text-sm font-bold text-gray-300 pr-3 cursor-pointer">{cat?.catName}</span>
+                  <span className="text-sm font-bold text-gray-300 pr-3 cursor-pointer">{gitem?.groupName}</span>
                   {/* <Edit2 size={14} /> */}
                 </button>
-                {cat?.catId > 5 && (
+                {gitem?.groupId > 5 && (
                   <button 
                     className="text-red-500 hover:text-orange-300 transition-colors" 
-                    onClick={() => { setCatModalType("edit"); hndlDeleteCat(cat?.catId)}}
+                    onClick={() => { setGroupModalType("edit"); hndlDeleteGroup(gitem?.groupId)}}
                   >
                     <Trash2 size={18} />
                   </button>
@@ -255,24 +416,22 @@ export default function KelolaProdukPage() {
 
       <hr className="border-white/5" />
 
-      {/* ===================== SECTION PRODUK ===================== */}
+      {/* ===================== SECTION GALLERY ===================== */}
       <section>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">Produk</h1>
-            <p className="text-sm font-medium text-gray-400">Pengaturan produk yang ditampilkan pada etalase web.</p>
+            <h1 className="text-3xl font-bold text-white mb-2">Galeri</h1>
+            <p className="text-sm font-medium text-gray-400">Pengaturan Gallery yang ditampilkan pada etalase web.</p>
           </div>
           <button 
             onClick={() => { 
               setProdModalType("add"); 
-              setSpecs([""]);
-              setSelectedIcon("Satellite");
               setImagePreview(null);
               setIsProdModalOpen(true); 
             }}
             className="flex items-center gap-2 px-6 py-3 bg-orange-500 text-black text-xs font-black uppercase tracking-widest rounded-xl hover:bg-orange-400 transition-all active:scale-95 shadow-[0_0_15px_rgba(249,115,22,0.3)]"
           >
-            <Plus size={16} /> Tambah Produk
+            <Plus size={16} /> Tambah Galeri
           </button>
         </div>
 
@@ -280,45 +439,50 @@ export default function KelolaProdukPage() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-[#0a0a0a] border-b border-white/10 text-xs font-black uppercase tracking-widest text-gray-500">
-                <th className="p-5 font-medium min-w-[250px]">Produk</th>
-                <th className="p-5 font-medium">Kategori</th>
-                <th className="p-5 font-medium">Harga</th>
+                <th className="p-5 font-medium min-w-[250px]">Deskripsi</th>
+                <th className="p-5 font-medium">Kelompok</th>
+                <th className="p-5 font-medium">Tipe</th>
+                <th className="p-5 font-medium">Tgl Dibuat</th>
                 <th className="p-5 font-medium text-center">Aksi</th>
               </tr>
             </thead>
             <tbody className="text-sm font-medium text-gray-300">
               {products.map((prod) => (
-                <tr key={prod.id} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
+                <tr key={prod.galId} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
                   <td className="p-5 text-white font-bold flex items-center gap-3">
                     <div className="w-8 h-8 rounded-lg bg-orange-500/10 text-orange-500 flex items-center justify-center border border-orange-500/20">
-                      {ICON_MAP[prod.iconName] || <PackageOpen size={16} />}
+                      <PackageOpen size={16} />
                     </div>
                     <div>
-                      <p>{prod.name}</p>
-                      <p className="text-[10px] text-gray-500 font-normal mt-0.5 line-clamp-1">{prod.description}</p>
+                      <p>{prod.galTitle}</p>
                     </div>
                   </td>
                   <td className="p-5">
                     <span className="px-3 py-1 text-[10px] uppercase tracking-wider font-bold rounded-md bg-white/5 border border-white/10">
-                      {prod.category}
+                      {prod.groupName}
                     </span>
                   </td>
-                  <td className="p-5">Rp {prod.price}</td>
+                  <td className="p-5">{prod.galType}</td>
+                  <td className="p-5 text-xs">
+                    {(prod.createdAt) ? new Date(prod.createdAt).toLocaleDateString('UTC', formatDateTime) : 'N/A'}
+                  </td>
                   <td className="p-5">
                     <div className="flex items-center justify-center gap-2">
                       <button 
                         onClick={() => { 
                           setProdModalType("edit"); 
-                          setSpecs(prod.features);
-                          setSelectedIcon(prod.iconName);
-                          setImagePreview(prod.image);
+                          // setSelectedIcon(prod.iconName);
+                          setImagePreview(prod.srcUrl);
                           setIsProdModalOpen(true); 
                         }}
                         className="p-2 rounded-lg bg-blue-500/10 text-blue-500 hover:bg-blue-500 hover:text-white transition-all"
                       >
                         <Edit2 size={16} />
                       </button>
-                      <button className="p-2 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all">
+                      <button 
+                        className="p-2 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all"
+                        onClick={() => { hndlDeleteData(prod.galId)}}
+                      >
                         <Trash2 size={16} />
                       </button>
                     </div>
@@ -334,28 +498,28 @@ export default function KelolaProdukPage() {
 
       {/* ===================== MODAL KATEGORI ===================== */}
       <AnimatePresence>
-        {isCatModalOpen && (
+        {isGroupModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsCatModalOpen(false)} className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsGroupModalOpen(false)} className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
             <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative w-full max-w-sm bg-[#111111] border border-white/10 rounded-3xl p-6">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-bold text-white">{catModalType === "add" ? "Tambah Kategori" : "Edit Kategori"}</h2>
-                <button onClick={() => setIsCatModalOpen(false)} className="text-gray-500 hover:text-white"><X size={20} /></button>
+                <h2 className="text-xl font-bold text-white">{groupModalType === "add" ? "Tambah Kelompok" : "Edit Kelompok"}</h2>
+                <button onClick={() => setIsGroupModalOpen(false)} className="text-gray-500 hover:text-white"><X size={20} /></button>
               </div>
               {/* TODO (Backend): Integrasi API POST/PUT Kategori */}
-              <form onSubmit={hndlSubmitCat}>
-                <label className="block text-xs font-bold uppercase text-gray-400 mb-2">Nama Kategori</label>
+              <form onSubmit={hndlSubmitGroup}>
+                <label className="block text-xs font-bold uppercase text-gray-400 mb-2">Nama Kelompok</label>
                 <input 
-                  type="text" name="cat_name"
-                  defaultValue={selCategory?.catName}
-                  className="w-full bg-black border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-orange-500" placeholder="Misal: FTTH" 
+                  type="text" name="group_name"
+                  defaultValue={selGroup?.groupName}
+                  className="w-full bg-black border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-orange-500" placeholder="group" 
                   required 
                 />
                 <label className="block text-xs font-bold uppercase text-gray-400 mb-2">Urutan</label>
                 <select 
                   name="ord_num"
                   className="w-full bg-black border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-orange-500" 
-                  defaultValue={selCategory?.ordNum}
+                  defaultValue={selGroup?.ordNum}
                   required
                 >
                   <option value={0}>--pilih urutan--</option>
@@ -377,52 +541,48 @@ export default function KelolaProdukPage() {
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsProdModalOpen(false)} className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
             <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto custom-scrollbar bg-[#111111] border border-white/10 rounded-3xl p-8">
               <div className="flex justify-between items-center mb-6 sticky top-0 bg-[#111111] z-10 py-2 border-b border-white/10">
-                <h2 className="text-2xl font-bold text-white">{prodModalType === "add" ? "Tambah Produk" : "Edit Produk"}</h2>
+                <h2 className="text-2xl font-bold text-white">{prodModalType === "add" ? "Tambah Galeri" : "Edit Galeri"}</h2>
                 <button onClick={() => setIsProdModalOpen(false)} className="text-gray-500 hover:text-white"><X size={24} /></button>
               </div>
 
               {/* TODO (Backend): Integrasi POST/PUT Produk multipart/form-data untuk file gambar */}
-              <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); setIsProdModalOpen(false); }}>
+              <form className="space-y-6" onSubmit={hndlSubmit}>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold uppercase text-gray-400 mb-2">Nama Produk</label>
-                    <input type="text" className="w-full bg-black border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-orange-500" placeholder="Misal: Akastar Secure" required />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold uppercase text-gray-400 mb-2">Kategori</label>
-                    <select className="w-full bg-black border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-orange-500" required>
-                      <option value="">Pilih Kategori...</option>
-                      {
-                        categories.map((cat) => (<option key={cat?.catId} value={cat.catId}>{cat.catName}</option>)
-                      )}
-                    </select>
-                  </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase text-gray-400 mb-2">Deskripsi</label>
+                  <input type="text" 
+                    name="gal_title"
+                    className="w-full bg-black border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-orange-500" 
+                    placeholder="Tulis deskripsi..." 
+                    required></input>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold uppercase text-gray-400 mb-2">Pilih Icon</label>
-                    <div className="flex flex-wrap gap-2">
-                      {ICON_OPTIONS.map((iconOpt) => (
-                        <button
-                          key={iconOpt.name}
-                          type="button"
-                          onClick={() => setSelectedIcon(iconOpt.name)}
-                          className={`p-3 rounded-xl border flex items-center justify-center transition-all 
-                            ${selectedIcon === iconOpt.name 
-                              ? "bg-orange-500/10 border-orange-500 text-orange-500" 
-                              : "bg-black border-white/10 text-gray-500 hover:border-orange-500/50 hover:text-orange-500"}`}
-                        >
-                          {iconOpt.component}
-                        </button>
-                      ))}
-                    </div>
+                    <label className="block text-xs font-bold uppercase text-gray-400 mb-2">Kelompok</label>
+                    <select 
+                      name="group_id"
+                      className="w-full bg-black border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-orange-500" 
+                      required
+                    >
+                      <option value="">Pilih Kelompok...</option>
+                      {
+                        groups.map((group) => (<option key={group?.groupId} value={group.groupId}>{group.groupName}</option>)
+                      )}
+                    </select>
                   </div>
-
                   <div>
-                    <label className="block text-xs font-bold uppercase text-gray-400 mb-2">Harga (Rp)</label>
-                    <input type="text" className="w-full bg-black border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-orange-500" placeholder="Misal: 5.500.000" required />
+                    <label className="block text-xs font-bold uppercase text-gray-400 mb-2">Tipe</label>
+                    <select 
+                      name="gal_type"
+                      className="w-full bg-black border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-orange-500" 
+                      required
+                    >
+                      <option value="">Pilih Tipe...</option>
+                      {
+                        typegallery.map((tipe) => (<option key={tipe} value={tipe}>{tipe}</option>)
+                      )}
+                    </select>
                   </div>
                 </div>
 
@@ -475,54 +635,8 @@ export default function KelolaProdukPage() {
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-bold uppercase text-gray-400 mb-2">Deskripsi Produk</label>
-                  <textarea rows={3} className="w-full bg-black border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-orange-500" placeholder="Tulis deskripsi..." required></textarea>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold uppercase text-gray-400 mb-2">Fitur Utama</label>
-                    <textarea rows={3} className="w-full bg-black border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-orange-500" placeholder="Pisahkan dengan koma atau deskripsikan..." required></textarea>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold uppercase text-gray-400 mb-2">Ideal Untuk</label>
-                    <textarea rows={3} className="w-full bg-black border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-orange-500" placeholder="Sektor industri, dll..." required></textarea>
-                  </div>
-                </div>
-
-                {/* --- BAGIAN SPESIFIKASI TEKNIS DINAMIS --- */}
-                <div className="p-4 rounded-xl border border-white/10 bg-[#0a0a0a]">
-                  <div className="flex justify-between items-center mb-4">
-                    <label className="block text-xs font-bold uppercase text-gray-400">Spesifikasi Teknis</label>
-                    <button type="button" onClick={handleAddSpec} className="text-[10px] uppercase font-bold text-orange-500 flex items-center gap-1 hover:text-orange-400">
-                      <Plus size={12} /> Tambah Spesifikasi
-                    </button>
-                  </div>
-                  <div className="space-y-3">
-                    {specs.map((spec, index) => (
-                      <div key={index} className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-orange-500 flex-shrink-0" />
-                        <input 
-                          type="text" 
-                          value={spec}
-                          onChange={(e) => handleSpecChange(index, e.target.value)}
-                          className="w-full bg-black border border-white/10 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-orange-500" 
-                          placeholder={`Spesifikasi ${index + 1}...`} 
-                          required 
-                        />
-                        {specs.length > 1 && (
-                          <button type="button" onClick={() => handleRemoveSpec(index)} className="text-red-500 hover:text-red-400 p-2">
-                            <Trash2 size={16} />
-                          </button>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
                 <button type="submit" className="w-full py-4 rounded-xl bg-orange-500 text-black text-xs font-black uppercase tracking-widest hover:bg-orange-400 transition-all shadow-[0_0_15px_rgba(249,115,22,0.3)]">
-                  Simpan Produk
+                  Simpan Galeri
                 </button>
               </form>
             </motion.div>

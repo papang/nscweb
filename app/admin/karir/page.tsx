@@ -6,8 +6,8 @@ import { Plus, Edit2, Trash2, X, PackageOpen, Globe, Zap, Satellite, MonitorChec
 import Swal from "sweetalert2";
 
 // Data Type
-interface ServiceCategory {
-  catId: number, catName: string, description: string, ordNum: number
+interface JobType {
+  typeId: number, typeName: string, description: string
 }
 
 // TODO (Backend): Fetch data produk dari API
@@ -48,14 +48,14 @@ const ICON_MAP: Record<string, React.ReactNode> = {
   Zap: <Zap size={16} />,
 };
 
-export default function KelolaProdukPage() {
+export default function KelolaKarirPage() {
 
   useEffect(() => {
-      reloadCategory();
+      reloadJobType();
     }, []);
 
-  const reloadCategory = async () => {
-    const response = await fetch("/api/service/cat/list", {
+  const reloadJobType = async () => {
+    const response = await fetch("/api/career/type/list", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -65,13 +65,13 @@ export default function KelolaProdukPage() {
 
     const result = await response.json();
     if (result.success) {
-      setCategories(result.result);
+      setJobType(result.result);
     }
   };
 
-  const [categories, setCategories] = useState<ServiceCategory[]>([]);
-  const [selCategory, setSelCategory] = useState<ServiceCategory | null>(null);
-  const [isCatModalOpen, setIsCatModalOpen] = useState(false);
+  const [jobType, setJobType] = useState<JobType[]>([]);
+  const [selJobType, setSelJobType] = useState<JobType | null>(null);
+  const [isTypeModalOpen, setIsTypeModalOpen] = useState(false);
   const [catModalType, setCatModalType] = useState<"add" | "edit">("add");
 
   const [products, setProducts] = useState(initialProducts);
@@ -95,24 +95,25 @@ export default function KelolaProdukPage() {
     setSpecs(newSpecs);
   };
 
-  const hndlSubmitCat = async (e: React.FormEvent<HTMLFormElement>) => {
+  const hndlSubmitType = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
 
-    // === TAMBAH KATEGORI ===
+    // === TAMBAH TIPE JOB ===
     if(catModalType==="add") {
 
-      const maxCatId = Math.max(...categories.map(item => item.catId));
+      let maxTypeId = 0;
+      if(jobType.length > 0)
+        maxTypeId = Math.max(...jobType.map(item => item.typeId));
 
-      const response = await fetch("/api/service/cat/ins", {
+      const response = await fetch("/api/career/type/ins", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          catId: (maxCatId + 1), 
-          catName: formData.get("cat_name"), 
-          ordNum: formData.get("ord_num"), 
+          typeId: (maxTypeId + 1), 
+          typeName: formData.get("type_name"), 
         }),
       });
 
@@ -126,7 +127,7 @@ export default function KelolaProdukPage() {
             color: "#fff",
             confirmButtonColor: "#f97316",
           }).then(() => {
-            reloadCategory();
+            reloadJobType();
           });
       }
     }
@@ -134,15 +135,14 @@ export default function KelolaProdukPage() {
     // === EDIT KATEGORI ===
     if(catModalType==="edit") {
 
-      const response = await fetch("/api/service/cat/upd", {
+      const response = await fetch("/api/career/type/upd", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          catId: selCategory?.catId, 
-          catName: formData.get("cat_name"), 
-          ordNum: formData.get("ord_num"), 
+          typeId: selJobType?.typeId, 
+          typeName: formData.get("type_name"), 
         }),
       });
 
@@ -156,16 +156,16 @@ export default function KelolaProdukPage() {
             color: "#fff",
             confirmButtonColor: "#f97316",
           }).then(() => {
-            reloadCategory();
+            reloadJobType();
           });
       }
     }
     
-    setIsCatModalOpen(false);
+    setIsTypeModalOpen(false);
 
   }
 
-  const hndlDeleteCat = async (catId: number) => {
+  const hndlDeleteType = async (typeId: number) => {
       Swal.fire({
         title: "",
         text: "Anda yakin ingin menghapus?",
@@ -180,12 +180,12 @@ export default function KelolaProdukPage() {
       })
       .then(async (result) => {
         if (result.isConfirmed) {
-          const response = await fetch("/api/service/cat/del", {
+          const response = await fetch("/api/career/type/del", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({"catId": catId }),
+            body: JSON.stringify({"typeId": typeId }),
           });
 
           const resultw = await response.json();
@@ -198,7 +198,7 @@ export default function KelolaProdukPage() {
               color: "#fff",
               confirmButtonColor: "#f97316",
             }).then(() => {
-              reloadCategory();
+              reloadJobType();
             });
           }
         }
@@ -210,15 +210,15 @@ export default function KelolaProdukPage() {
   return (
     <div className="p-8 md:p-12 max-w-7xl mx-auto space-y-12">
       
-      {/* ===================== SECTION KATEGORI ===================== */}
+      {/* ===================== SECTION JOB TYPE ===================== */}
       <section>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div>
-            <h2 className="text-2xl font-bold text-white mb-1">Kategori</h2>
-            <p className="text-sm font-medium text-gray-400">Pengaturan kategori layanan.</p>
+            <h2 className="text-2xl font-bold text-white mb-1">Kategori Job</h2>
+            <p className="text-sm font-medium text-gray-400">Pengaturan Kategori Job pada halaman Karir.</p>
           </div>
           <button 
-            onClick={() => { setCatModalType("add"); setIsCatModalOpen(true); setSelCategory(null); }}
+            onClick={() => { setCatModalType("add"); setIsTypeModalOpen(true); setSelJobType(null); }}
             className="flex items-center gap-2 px-4 py-2 bg-[#111111] border border-white/10 text-white text-xs font-black uppercase tracking-widest rounded-xl hover:border-orange-500 hover:text-orange-500 transition-all active:scale-95"
           >
             <Plus size={16} /> Tambah Kategori
@@ -226,27 +226,25 @@ export default function KelolaProdukPage() {
         </div>
 
         <div className="flex flex-wrap gap-3">
-          {categories.map((cat) => (
-            <div key={cat?.catId} className="flex items-center gap-3 px-4 py-2 bg-[#0a0a0a] border border-white/30 rounded-xl hover:border-orange-500/70 cursor-pointer">
+          {jobType.map((pitem) => (
+            <div key={pitem?.typeId} className="flex items-center gap-3 px-4 py-2 bg-[#0a0a0a] border border-white/30 rounded-xl hover:border-orange-500/70 cursor-pointer">
               
               <div className="flex items-center gap-1 border-l border-white/30 pl-3 cursor-pointer">
                 <button 
                   onClick={() => { 
-                    setSelCategory(cat);
-                    setCatModalType("edit"); setIsCatModalOpen(true); 
+                    setSelJobType(pitem);
+                    setCatModalType("edit"); setIsTypeModalOpen(true); 
                   }}
                 >
-                  <span className="text-sm font-bold text-gray-300 pr-3 cursor-pointer">{cat?.catName}</span>
+                  <span className="text-sm font-bold text-gray-300 pr-3 cursor-pointer">{pitem?.typeName}</span>
                   {/* <Edit2 size={14} /> */}
                 </button>
-                {cat?.catId > 5 && (
-                  <button 
-                    className="text-red-500 hover:text-orange-300 transition-colors" 
-                    onClick={() => { setCatModalType("edit"); hndlDeleteCat(cat?.catId)}}
-                  >
-                    <Trash2 size={18} />
-                  </button>
-                )}
+                <button 
+                  className="text-red-500 hover:text-orange-300 transition-colors" 
+                  onClick={() => { setCatModalType("edit"); hndlDeleteType(pitem?.typeId)}}
+                >
+                  <Trash2 size={18} />
+                </button>
               </div>
             </div>
           ))}
@@ -255,12 +253,12 @@ export default function KelolaProdukPage() {
 
       <hr className="border-white/5" />
 
-      {/* ===================== SECTION PRODUK ===================== */}
+      {/* ===================== SECTION KARIR ===================== */}
       <section>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">Produk</h1>
-            <p className="text-sm font-medium text-gray-400">Pengaturan produk yang ditampilkan pada etalase web.</p>
+            <h1 className="text-3xl font-bold text-white mb-2">Job</h1>
+            <p className="text-sm font-medium text-gray-400">Pengaturan daftar Job yang ditampilkan pada web.</p>
           </div>
           <button 
             onClick={() => { 
@@ -272,7 +270,7 @@ export default function KelolaProdukPage() {
             }}
             className="flex items-center gap-2 px-6 py-3 bg-orange-500 text-black text-xs font-black uppercase tracking-widest rounded-xl hover:bg-orange-400 transition-all active:scale-95 shadow-[0_0_15px_rgba(249,115,22,0.3)]"
           >
-            <Plus size={16} /> Tambah Produk
+            <Plus size={16} /> Tambah Job
           </button>
         </div>
 
@@ -334,35 +332,23 @@ export default function KelolaProdukPage() {
 
       {/* ===================== MODAL KATEGORI ===================== */}
       <AnimatePresence>
-        {isCatModalOpen && (
+        {isTypeModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsCatModalOpen(false)} className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsTypeModalOpen(false)} className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
             <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative w-full max-w-sm bg-[#111111] border border-white/10 rounded-3xl p-6">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-bold text-white">{catModalType === "add" ? "Tambah Kategori" : "Edit Kategori"}</h2>
-                <button onClick={() => setIsCatModalOpen(false)} className="text-gray-500 hover:text-white"><X size={20} /></button>
+                <button onClick={() => setIsTypeModalOpen(false)} className="text-gray-500 hover:text-white"><X size={20} /></button>
               </div>
               {/* TODO (Backend): Integrasi API POST/PUT Kategori */}
-              <form onSubmit={hndlSubmitCat}>
-                <label className="block text-xs font-bold uppercase text-gray-400 mb-2">Nama Kategori</label>
+              <form onSubmit={hndlSubmitType}>
+                <label className="block text-xs font-bold uppercase text-gray-400 mb-2">Kategori Job</label>
                 <input 
-                  type="text" name="cat_name"
-                  defaultValue={selCategory?.catName}
-                  className="w-full bg-black border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-orange-500" placeholder="Misal: FTTH" 
+                  type="text" name="type_name"
+                  defaultValue={selJobType?.typeName}
+                  className="w-full bg-black border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-orange-500" placeholder="" 
                   required 
                 />
-                <label className="block text-xs font-bold uppercase text-gray-400 mb-2">Urutan</label>
-                <select 
-                  name="ord_num"
-                  className="w-full bg-black border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-orange-500" 
-                  defaultValue={selCategory?.ordNum}
-                  required
-                >
-                  <option value={0}>--pilih urutan--</option>
-                  {
-                    [1,2,3,4,5,6,7,8,9,10].map((i) => (<option key={i} value={i}>{i}</option>)
-                  )}
-                </select>
                 <button type="submit" className="w-full mt-6 py-3 rounded-xl bg-orange-500 text-black text-xs font-black uppercase tracking-widest hover:bg-orange-400 transition-all">Simpan</button>
               </form>
             </motion.div>
@@ -394,7 +380,7 @@ export default function KelolaProdukPage() {
                     <select className="w-full bg-black border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-orange-500" required>
                       <option value="">Pilih Kategori...</option>
                       {
-                        categories.map((cat) => (<option key={cat?.catId} value={cat.catId}>{cat.catName}</option>)
+                        jobType.map((cat) => (<option key={cat?.typeId} value={cat.typeId}>{cat.typeName}</option>)
                       )}
                     </select>
                   </div>

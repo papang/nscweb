@@ -4,11 +4,19 @@ import Link from "next/link";
 import {useEffect, useState} from "react";
 import {redirect} from "next/navigation";
 import { usePathname, useRouter, useSearchParams } from "next/navigation"; // Tambahkan useRouter
-import { Package, Newspaper, LogOut, LayoutDashboard, ChevronRight, ChevronDown } from "lucide-react";
+import { Package, Newspaper, LogOut, BriefcaseBusiness, Images, LayoutDashboard } from "lucide-react";
+
+interface SessionInfo {
+  userId, userName, roleId, iat, exp
+};
+
+interface Menu {
+  id, name, icon, path, sub
+};
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
 
-  const [sessionInfo, setSessionInfo] = useState({});
+  const [sessionInfo, setSessionInfo] = useState<SessionInfo | null>(null);
 
   useEffect(() => {
     useAuth();
@@ -40,7 +48,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
 
   const pathname = usePathname();
-  const searchParams = useSearchParams();
+  // const searchParams = useSearchParams();
   const router = useRouter();
 
   const toggleSubMenu = async (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
@@ -55,17 +63,27 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return <>{children}</>;
   }
 
-  const menuItems = [
-    // { name: "Dashboard", icon: <LayoutDashboard size={18} />, path: "/admin" },
-    { id: "m_news", name: "Berita", icon: <Newspaper size={18} />, path: "", sub: [
-      { id: "m_news_insight", name: "Berita (Insight)", icon: "", path: "/admin/berita/insight" },
-      { id: "m_news_ekstern", name: "Berita Eksternal", icon: "", path: "/admin/berita/ekstern" },
-    ]},
-    // { name: "Karir", icon: <Package size={18} />, path: "/admin/karir" },
-    // { name: "Galeri", icon: <Package size={18} />, path: "/admin/galeri" },
-    { id: "m_produk", name: "Produk", icon: <Package size={18} />, path: "/admin/produk" },
-    
-  ];
+  let menuItems: Menu[] = [];
+  if(sessionInfo?.roleId==="ADM") {
+    menuItems = [
+      // { name: "Dashboard", icon: <LayoutDashboard size={18} />, path: "/admin" },
+      { id: "m_news", name: "Berita", icon: <Newspaper size={18} />, path: "", sub: [
+        { id: "m_news_insight", name: "Berita (Insight)", icon: "", path: "/admin/berita/insight" },
+        { id: "m_news_ekstern", name: "Berita Eksternal", icon: "", path: "/admin/berita/ekstern" },
+      ]},
+      { id: "m_karir", name: "Karir", icon: <BriefcaseBusiness size={18} />, path: "/admin/karir", sub: null },
+      { id: "m_galeri", name: "Galeri", icon: <Images size={18} />, path: "/admin/galeri", sub: null },
+      // { id: "m_produk", name: "Produk", icon: <Package size={18} />, path: "/admin/produk", sub: null },
+      
+    ];
+  } 
+  
+  if(sessionInfo?.roleId==="SAL") {
+    menuItems = [
+      { id: "m_dash", name: "Dashboard", icon: <LayoutDashboard size={18} />, path: "/admin", sub: null },
+      { id: "m_produk", name: "Produk", icon: <Package size={18} />, path: "/admin/produk", sub: null },
+    ];
+  } 
 
   // --- FUNGSI LOGOUT ---
   const handleLogout = async () => {
@@ -95,21 +113,21 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           {menuItems.map((item) => {
             const isActive = pathname === item.path;
             return (
-              <div key={item.name}>
+              <div key={item?.name}>
                 <Link
-                  id={item.id} onClick={(e)=> void toggleSubMenu(e)}
-                  href={item.path}
+                  id={item?.id} onClick={(e)=> void toggleSubMenu(e)}
+                  href={item?.path}
                   className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${
                     isActive 
                       ? "bg-orange-500/10 text-orange-500 border border-orange-500/20" 
                       : "text-gray-400 hover:text-white hover:bg-white/5 border border-transparent"
                   }`}
                 >
-                  {item.icon} {item.name}
+                  {item?.icon} {item?.name}
                 </Link>
-                  {(item.sub) ? (
-                    <div className="" id={`sub_${item.id}`}>
-                    { item.sub.map((subitem) => {
+                  {(item?.sub) ? (
+                    <div className="" id={`sub_${item?.id}`}>
+                    { item?.sub.map((subitem) => {
                         const isActive = pathname === subitem.path;
                         return (
                           <Link 

@@ -1,0 +1,47 @@
+import { OdooClient } from '@tapni/odoo-xmlrpc';
+
+const client = new OdooClient({
+  url: 'https://your-odoo-instance.com',
+  db: 'your-database',
+  username: 'admin@example.com',
+  apiKey: 'your-odoo-api-key'
+});
+
+async function getPartners() {
+  const partners = await client.searchRead('res.partner', [['is_company', '=', true]], {
+    fields: ['name', 'email'],
+    limit: 5
+  });
+  console.log(partners);
+}
+getPartners();
+
+async function getProductList() {
+  try {
+    // 2. Define search filters (domain). E.g., fetch active, saleable products
+    const domain = [
+      ['active', '=', true],
+      ['sale_ok', '=', true]
+    ];
+
+    // 3. Define configuration options
+    const options = {
+      fields: ['id', 'name', 'list_price', 'qty_available', 'barcode'], // Fields to return
+      limit: 10,                                                        // Total items to return
+      order: 'name asc'                                                 // Sort alphabetically
+    };
+
+    console.log('Fetching products from Odoo...');
+    
+    // 4. Execute search_read on product.template (or product.product for specific variants)
+    const products = await client.searchRead('product.template', domain, options);
+    
+    console.log(`Successfully retrieved ${products.length} products:`);
+    console.log(JSON.stringify(products, null, 2));
+
+  } catch (error) {
+    console.error('Error fetching product list from Odoo:', error);
+  }
+}
+
+getProductList();

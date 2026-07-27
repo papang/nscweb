@@ -32,3 +32,42 @@ export const tCompanyUsers =p.pgTable("ctn_users", {
     roleId: p.text("role_id"),
     hashPasswd: p.text("hash_pass"),
 });
+
+export const pServiceCategory =p.pgTable("p_service_cat", {
+    catId: p.integer("service_cat_id").primaryKey(),
+    catName: p.text("cat_name").notNull(),
+    description: p.text("cat_desc"),
+    ordNum: p.integer("ord_num").default(0),
+});
+
+// === KARIR === //
+
+export const pJobType =p.pgTable("p_job_type", {
+    typeId: p.integer("type_id").primaryKey(),
+    typeName: p.text("type_name").notNull(),
+    description: p.text("type_desc"),
+});
+
+
+
+// === GALERI === //
+
+export const pGroupGal =p.pgTable("p_group_gallery", {
+    groupId: p.integer("group_id").primaryKey(),
+    groupName: p.text("group_name").notNull(),
+    description: p.text("group_desc"),
+    ordNum: p.integer("ord_num").default(0),
+});
+
+export const tGallery =p.pgTable("ctn_gallery", {
+    galId: p.integer("gal_id").notNull().primaryKey().default(sql`nextval('gal_id_seq')`),
+    groupId: p.integer("group_id").notNull().default(0),
+    galTitle: p.text("gal_title").notNull(),
+    galType: p.text("gal_type"),
+    srcUrl: p.text("src_url"),
+    thumbnailUrl: p.text("thumbnail_url"),
+    createdAt: p.timestamp("created_at").defaultNow(),
+    createdBy: p.text("created_by"),
+    updatedAt: p.timestamp("updated_at").$onUpdate(() => new Date()),
+    updatedBy: p.text("updated_by"),
+});
