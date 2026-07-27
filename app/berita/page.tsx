@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, ChangeEvent} from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { 
@@ -16,67 +16,23 @@ import {
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Link from "next/link";
+import {News, Category } from "@/app/lib/structNews";
 
-// --- DATA DUMMY INTERNAL NSC ---
-const latestNews = [
-  { id: 1, cat: "Update", title: "NSC Luncurkan Satelit LEO Terbaru di Orbit Indonesia", time: "2 Jam", img: "/particle7.webp" },
-  { id: 2, cat: "Tech", title: "Cara Optimalkan Latensi Internet Satelit untuk Gaming", time: "5 Jam", img: "/particle8.webp" },
-  { id: 3, cat: "Event", title: "Rekap Workshop Digitalisasi Desa Bersama NSC", time: "1 Hari", img: "/particle9.webp" },
-];
+const formatDateTime: Intl.DateTimeFormatOptions = {
+  timeZone: "UTC",
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false // Forces 24-hour format
+}
 
 const categoryNews = [
   { id: 10, cat: "Teknologi", title: "Implementasi AI dalam Monitoring Jaringan Satelit", time: "2 Hari" },
   { id: 11, cat: "Satelit", title: "Peluncuran Terminal Flat-Panel Generasi Kedua", time: "3 Hari" },
   { id: 12, cat: "Bisnis", title: "NSC Jalin Kerja Sama Strategis dengan Provider Lokal", time: "4 Hari" },
   { id: 13, cat: "Tutorial", title: "Cara Setting Router NSC untuk Kecepatan Maksimal", time: "5 Hari" },
-];
-
-const categories = ['Teknologi', 'Satelit', 'Bisnis', 'Tutorial'];
-
-// --- DATA DUMMY EXTERNAL NEWS FEED ---
-const externalFeeds = [
-  { 
-    id: 101, 
-    source: "Kompas.com", 
-    sourceIcon: <Newspaper size={14} />, 
-    title: "BRIN: Satelit NEO-1 Kantongi TKDN 65 Persen, Siap Meluncur Januari 2027", 
-    excerpt: "Badan Riset dan Inovasi Nasional (BRIN) mengungkapkan satelit Nusantara Earth Observation-1 (NEO-1) yang dijadwalkan meluncur pada Januari 2027 memiliki tingkat komponen dalam negeri (TKDN) sekitar 65 persen", 
-    time: "8 Jul 2026", 
-    url: "https://nasional.kompas.com/read/2026/07/08/18085691/brin-satelit-neo-1-kantongi-tkdn-65-persen-siap-meluncur-januari-2027", 
-    img: "/news/news_kompas.jpg" 
-  },
-  { 
-    id: 102, 
-    source: "LinkedIn", 
-    sourceIcon: <Briefcase size={14} />, 
-    title: "Starlink: Membuka Pintu Konektivitas Global", 
-    excerpt: "Starlink membawa revolusi dalam dunia digital dengan memberikan akses cepat dan luas ke wilayah yang sebelumnya sulit dijangkau. Dengan teknologi yang terus berkembang, Starlink memberikan koneksi yang lebih baik untuk masa depan yang lebih terhubung. \
-      Teknologi Starlink menghadirkan banyak keunggulan yang menjadikannya solusi ideal, baik untuk kebutuhan pribadi maupun bisnis. Berikut merupakan berbagai keunggulan utama dari layanan Starlink.", 
-    time: "1 year ago", 
-    url: "https://www.linkedin.com/posts/starlink-menunjung-revolusi-konektivitas-ugcPost-7283443136628998144-YsRQ/", 
-    img: "/news/news_linkedin.jpg" 
-  },
-  { 
-    id: 103, 
-    source: "Tech in Asia", 
-    sourceIcon: <Globe size={14} />, 
-    title: "Indonesia launches N5 satellite to boost internet in remote areas", 
-    excerpt: "Indonesia has launched the Nusantara Lima (N5) satellite to boost internet coverage across the country, especially in remote and underserved areas. \
-      The satellite, owned by PT Satelit Nusantara Lima, a subsidiary of PT Pasifik Satelit Nusantara, was developed with partners including Boeing Satellite Systems, Hughes Network Systems, and SpaceX.", 
-    time: "14 Sep 2025", 
-    url: "https://www.techinasia.com/news/indonesia-launches-n5-satellite-to-boost-internet-in-remote-areas", 
-    img: "/news/news_techinasia.webp" 
-  },
-  { 
-    id: 104, 
-    source: "DetikNet", 
-    sourceIcon: <Newspaper size={14} />, 
-    title: "Indonesia Siapkan Satelit LEO, Tak Cuma Andalkan Starlink", 
-    excerpt: "Pemerintah mengungkap operator satelit nasional tengah memproses pengembangan satelit Low Earth Orbit (LEO). Saat ini, proses pengajuan orbit dan frekuensi satelit tersebut telah diajukan ke International Telecommunication Union (ITU) sebagai bagian dari tahapan sebelum satelit dapat diluncurkan.", 
-    time: "8 Jul 2026", 
-    url: "https://inet.detik.com/law-and-policy/d-8565860/indonesia-siapkan-satelit-leo-tak-cuma-andalkan-starlink", 
-    img: "/news/news_detikinet.jpeg" 
-  },
 ];
 
 const getDomainLogo = (url: string) => {
@@ -92,9 +48,93 @@ const getDomainLogo = (url: string) => {
 export default function SimpleNews() {
   // State untuk Tab Navigasi & Kategori Internal
   const [activeTab, setActiveTab] = useState<"nsc" | "feed">("nsc");
-  const [activeCategory, setActiveCategory] = useState('Teknologi');
-  
-  const filteredNews = categoryNews.filter(item => item.cat === activeCategory);
+  const [activeCategory, setActiveCategory] = useState("");
+
+  const [category, setCategory] = useState<Category[]>([]);
+  const [newsInsight, setNewsInsight] = useState<News[]>([]);
+  const [newsFeed, setNewsFeed] = useState<News[]>([]);
+  const [latestNews, setLatestNews] = useState<News[]>([]);
+  const [headlineNews, setHeadlineNews] = useState<News | null>(null);
+  const [sortedNews, setSortedNews] = useState<News[] | null>(null);
+  const [linesContent, setLinesContent] = useState([]);
+
+  const filteredNews = newsInsight.filter(item => item.newsCatName === activeCategory).slice(0,5);
+
+  useEffect(() => {
+    reloadCategory();
+    reloadNewsInsight();
+    reloadNewsFeed();
+  }, []);
+
+  const reloadCategory = async () => {
+    const response = await fetch("/api/news/cat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({}),
+    });
+
+    const result = await response.json();
+    if (result.success) {
+      setCategory(result.result);
+      setActiveCategory(result.result[0]?.newsCatName);
+    }
+  };
+
+  const reloadNewsInsight = async () => {
+    const response = await fetch("/api/news/insight", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ srcType: "IN" }),
+    });
+
+    const result = await response.json();
+    if (result.success) {
+      setNewsInsight(result.result);
+      const aNews = result.result.filter(item => item.isHeadline === 1);
+      setHeadlineNews(aNews[0]);
+      const bNews = result.result.filter(item => item.isHeadline === 0).slice(0,5);
+      setLatestNews(bNews);
+      // setLinesContent(aNews[0].newsContent.split(/\r?\n|\r/) );
+
+      const sNews = result.result.toSorted((a, b) => {
+        return b.statVisit - a.statVisit;
+      });
+
+      setSortedNews(sNews.slice(0,3));
+    }
+    
+  };
+
+  const reloadNewsFeed = async () => {
+    const response = await fetch("/api/news/feed", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ srcType: "EX" }),
+    });
+
+    const result = await response.json();
+    if (result.success) {
+      setNewsFeed(result.result);
+    }
+    
+  };
+
+  const hndlSearch = async (e: ChangeEvent<HTMLInputElement>) => {
+    const filteredData = newsInsight.filter((item) => (
+        item.newsContent.toLowerCase().includes(e.target.value.toLowerCase()) || 
+        item.newsTitle.toLowerCase().includes(e.target.value.toLowerCase())
+      )
+    )
+    .slice(0,5);
+    setLatestNews(filteredData);
+  };
+
 
   return (
     <main className="relative min-h-screen bg-black text-gray-200 selection:bg-orange-500/30 overflow-hidden font-sans">
@@ -120,6 +160,7 @@ export default function SimpleNews() {
               <input 
                 type="text" 
                 placeholder="Cari berita..." 
+                onChange={hndlSearch}
                 className="w-full bg-[#111111] border border-white/10 rounded-full py-2 pl-10 pr-4 text-sm outline-none focus:border-orange-500 focus:bg-[#1a1a1a] transition-all text-white placeholder-gray-500"
               />
             </div>
@@ -158,12 +199,12 @@ export default function SimpleNews() {
             >
               {/* KOLOM KIRI (Berita Utama & List) */}
               <div className="lg:col-span-2 space-y-8">
-                <Link href="/berita/detail/teknologi-beamforming" className="block">
+                <Link href={`/berita/detail/${headlineNews?.newsId}`} className="block">
                   <motion.div className="group cursor-pointer">
                     <div className="relative aspect-video rounded-3xl overflow-hidden mb-6 border border-white/10 shadow-2xl">
                       <Image 
-                        src="/particle9.webp" 
-                        alt="Main" 
+                        src={headlineNews?.imgUrl || ""} 
+                        alt={headlineNews?.newsTitle || ""} 
                         fill 
                         className="object-cover group-hover:scale-105 transition-transform duration-500" 
                       />
@@ -173,7 +214,7 @@ export default function SimpleNews() {
                           Sorotan
                         </span>
                         <h2 className="text-2xl md:text-3xl font-bold leading-tight text-white group-hover:text-orange-400 transition-colors">
-                          Teknologi Beamforming: Masa Depan Internet Tanpa Lag
+                          {headlineNews?.newsTitle || ""} 
                         </h2>
                       </div>
                     </div>
@@ -184,20 +225,20 @@ export default function SimpleNews() {
                   <h3 className="text-sm font-black uppercase tracking-widest text-gray-500 border-b border-white/10 pb-2">Update Terkini</h3>
                   {latestNews.map((item) => (
                     <Link 
-                      key={item.id} 
-                      href={`/berita/detail/${item.title.toLowerCase().replace(/ /g, "-")}`}
+                      key={item.newsId} 
+                      href={`/berita/detail/${item.newsId}`}
                       className="block"
                     >
                       <div className="flex gap-5 p-3 rounded-2xl bg-[#111111]/80 border border-white/5 hover:bg-[#1a1a1a] hover:border-orange-500/50 transition-all cursor-pointer group items-center backdrop-blur-sm">
                         <div className="relative h-20 w-20 md:h-24 md:w-32 flex-shrink-0 overflow-hidden rounded-xl border border-white/10">
-                          <Image src={item.img} alt={item.title} fill className="object-cover group-hover:scale-110 transition-transform duration-500" />
+                          <Image src={item.imgUrl} alt={item.newsTitle} fill className="object-cover group-hover:scale-110 transition-transform duration-500" />
                         </div>
                         <div className="flex-grow">
                           <div className="flex items-center gap-3 mb-1">
-                            <span className="text-orange-500 text-[10px] font-bold uppercase tracking-wider">{item.cat}</span>
-                            <span className="text-gray-500 text-[10px] flex items-center gap-1 font-medium"><Clock size={10}/> {item.time}</span>
+                            <span className="text-orange-500 text-[10px] font-bold uppercase tracking-wider">{item.newsCatName}</span>
+                            <span className="text-gray-500 text-[10px] flex items-center gap-1 font-medium"><Clock size={10}/> {(item?.createdAt) ? new Date(item?.createdAt).toLocaleDateString('UTC', formatDateTime) : 'N/A'}</span>
                           </div>
-                          <h3 className="font-bold text-base md:text-lg leading-tight text-gray-200 group-hover:text-orange-400 transition-colors">{item.title}</h3>
+                          <h3 className="font-bold text-base md:text-lg leading-tight text-gray-200 group-hover:text-orange-400 transition-colors">{item.newsTitle}</h3>
                         </div>
                         <ChevronRight className="hidden md:block text-gray-600 group-hover:text-orange-500 transition-colors mr-2" />
                       </div>
@@ -208,32 +249,40 @@ export default function SimpleNews() {
 
               {/* KOLOM KANAN (Kategori & Populer) */}
               <div className="space-y-12">
-                {/* <section className="bg-[#111111] p-6 rounded-[32px] border border-white/10 shadow-2xl backdrop-blur-md">
-                  <h3 className="text-lg font-bold text-white border-b border-white/10 pb-4 mb-6">Paling Populer</h3>
+                <section className="bg-[#111111] p-6 rounded-[32px] border border-white/10 shadow-2xl backdrop-blur-md">
+                  <h3 className="text-lg font-bold text-white border-b border-white/10 pb-4 mb-6">Berita Populer</h3>
                   <div className="space-y-6">
-                    {[1, 2, 3 ].map((i) => (
-                      <div key={i} className="flex gap-4 cursor-pointer group">
-                        <span className="text-2xl font-black text-gray-700 group-hover:text-orange-500 transition-colors">0{i}</span>
-                        <p className="text-sm font-medium leading-snug text-gray-400 group-hover:text-orange-400 transition-colors">Bagaimana satelit LEO bekerja di cuaca ekstrem?</p>
-                      </div>
+                    {sortedNews?.map((sortedItem, i) => (
+                      <Link 
+                        key={i} 
+                        href={`/berita/detail/${sortedItem?.newsId}`}
+                        className="block"
+                      >
+                        <div className="flex gap-4 cursor-pointer group">
+                          <span className="text-2xl font-black text-gray-700 group-hover:text-orange-500 transition-colors">0{i+1}</span>
+                          <p className="text-sm font-medium leading-snug text-gray-400 group-hover:text-orange-400 transition-colors">
+                            {sortedItem?.newsTitle}
+                          </p>
+                        </div>
+                      </Link>
                     ))}
                   </div>
-                </section> */}
+                </section>
 
                 <section className="bg-[#111111] p-6 rounded-[32px] border border-white/10 shadow-2xl backdrop-blur-md">
                   <h3 className="text-lg font-bold text-white mb-6">Kategori</h3>
                   <div className="flex flex-wrap gap-2 mb-8">
-                    {categories.map((c) => (
+                    {category.map((cat) => (
                       <button 
-                        key={c}
-                        onClick={() => setActiveCategory(c)}
+                        key={cat.newsCatId}
+                        onClick={() => setActiveCategory(cat.newsCatName)}
                         className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all border ${
-                          activeCategory === c 
+                          activeCategory === cat.newsCatName 
                           ? "bg-orange-500 text-black border-orange-500 shadow-[0_0_15px_rgba(249,115,22,0.3)]" 
                           : "bg-white/5 text-gray-400 border-white/10 hover:bg-white/10"
                         }`}
                       >
-                        {c}
+                        {cat.newsCatName}
                       </button>
                     ))}
                   </div>
@@ -248,11 +297,16 @@ export default function SimpleNews() {
                         className="space-y-4"
                       >
                         {filteredNews.map((item) => (
-                          <div key={item.id} className="group cursor-pointer pb-3 border-b border-white/10 last:border-0 hover:pl-1 transition-all">
-                            <p className="text-gray-500 font-medium text-[10px] mb-1">{item.time} lalu</p>
-                            <h4 className="text-sm font-bold text-gray-300 leading-tight group-hover:text-orange-400 transition-colors">
-                              {item.title}
-                            </h4>
+                          <div key={item.newsId} className="group cursor-pointer pb-3 border-b border-white/10 last:border-0 hover:pl-1 transition-all">
+                            <p className="text-gray-500 font-medium text-[10px] mb-1">{(item?.createdAt) ? new Date(item?.createdAt).toLocaleDateString('UTC', formatDateTime) : 'N/A'}</p>
+                            <Link 
+                              href={`/berita/detail/${item.newsId}`}
+                              className="block"
+                            >
+                              <h4 className="text-sm font-bold text-gray-300 leading-tight group-hover:text-orange-400 transition-colors">
+                                {item.newsTitle}
+                              </h4>
+                            </Link>
                           </div>
                         ))}
                       </motion.div>
@@ -273,22 +327,22 @@ export default function SimpleNews() {
             transition={{ duration: 0.2 }}
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
           >
-            {externalFeeds.map((feed) => {
+            {newsFeed.map((feed) => {
               // Memanggil fungsi penarik logo otomatis
-              const logoUrl = getDomainLogo(feed.url);
+              const logoUrl = getDomainLogo(feed.srcUrl);
 
               return (
                 <a 
-                  key={feed.id} 
-                  href={feed.url} 
+                  key={feed.newsId} 
+                  href={feed.srcUrl} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="group flex flex-col bg-[#111111] border border-white/10 rounded-[32px] overflow-hidden hover:border-orange-500/50 hover:shadow-[0_0_20px_rgba(249,115,22,0.1)] transition-all duration-300 cursor-pointer"
                 >
                   {/* Foto Feed (Jika ada) */}
-                  {feed.img && (
+                  {feed.imgUrl && (
                     <div className="relative h-48 w-full border-b border-white/10 overflow-hidden">
-                      <Image src={feed.img} alt={feed.source} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
+                      <Image src={feed.imgUrl} alt={feed.srcNews} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
                       <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors" />
                     </div>
                   )}
@@ -300,24 +354,24 @@ export default function SimpleNews() {
                         {/* LOGO OTOMATIS */}
                         {logoUrl ? (
                           <div className="relative w-4 h-4 bg-white rounded-full overflow-hidden flex items-center justify-center p-0.5">
-                            <img src={logoUrl} alt={feed.source} className="w-full h-full object-contain" />
+                            <img src={logoUrl} alt={feed.srcNews} className="w-full h-full object-contain" />
                           </div>
                         ) : (
                           <Globe size={14} /> // Fallback icon jika gagal
                         )}
-                        <span className="text-[10px] font-black uppercase tracking-widest">{feed.source}</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest">{feed.srcNews}</span>
                       </div>
                       <span className="text-gray-500 text-[10px] font-medium flex items-center gap-1">
-                        <Clock size={10} /> {feed.time}
+                        <Clock size={10} /> {(feed?.createdAt) ? new Date(feed?.createdAt).toLocaleDateString('UTC', formatDateTime) : 'N/A'}
                       </span>
                     </div>
 
                     {/* Title & Excerpt */}
                     <h3 className="text-lg font-bold text-white mb-2 leading-snug group-hover:text-orange-400 transition-colors">
-                      {feed.title}
+                      {feed.newsTitle}
                     </h3>
                     <p className="text-sm text-gray-400 font-medium leading-relaxed mb-6 line-clamp-3">
-                      {feed.excerpt}
+                      {feed.newsContent}
                     </p>
 
                     {/* External Link Indicator */}

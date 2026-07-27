@@ -3,60 +3,24 @@
 import { useEffect, useState, use } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Edit2, Trash2, X, FileText, Upload, Link as LinkIcon, Globe, Rss } from "lucide-react";
+import Swal from "sweetalert2";
+import { uploadFileAction } from "@/app/lib/upload_file";
+import Image from "next/image";
+import {News, Category } from "@/app/lib/structNews";
 
-// TODO (Backend): Fetch data berita dari API
-interface News {
-  newsId: number,
-  newsCatId: number,
-  newsTitle: string,
-  imgUrl: string,
-  authorBy: string,
-  newsContent: string,
-  isPublished: number,
-  createdBy: string,
-  createdAt: string,
-  updatedBy: string,
-  updatedAt: string,
-  statVisit: number,
-  tags: string[],
+const formatDateTime: Intl.DateTimeFormatOptions = {
+  timeZone: "UTC",
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false // Forces 24-hour format
 }
-
-const initialNews = [
-  { 
-    id: 1, 
-    type: "Internal", // Internal = Berita Resmi NSC
-    category: "Update",
-    title: "NSC Luncurkan Satelit LEO Terbaru di Orbit Indonesia", 
-    date: "23 April 2026", 
-    status: "Published", 
-    author: "Tim Redaksi NSC",
-    readTime: "4 Menit",
-    content: "Nusantara Star Connect (NSC) secara resmi mengumumkan...",
-    image: "/particle7.webp"
-  },
-  { 
-    id: 2, 
-    type: "External", // External = Industry Feed
-    sourceName: "Kompas.com",
-    sourceUrl: "https://www.kompas.com/tekno",
-    title: "Pemerintah Targetkan Seluruh Desa Terkoneksi Internet Satelit di 2027", 
-    excerpt: "Kementerian Kominfo menggenjot pemerataan akses internet di daerah 3T...",
-    date: "3 Jam lalu", 
-    status: "Published", 
-    image: "/particle2.webp"
-  },
-];
-
-const categories = ['Teknologi', 'Satelit', 'Bisnis', 'Tutorial', 'Update', 'Event'];
 
 export default function KelolaBeritaPage({ params, }: { params: Promise<{ slug: string }>}) {
 
   const { slug } = use(params);
-
-  const dateFormatter = new Intl.DateTimeFormat("en-US", {
-    dateStyle: "medium",
-    timeZone: "UTC", // Lock the timezone to avoid hydration errors
-  });
 
   useEffect(() => {
     if(slug=='insight') {
@@ -69,27 +33,301 @@ export default function KelolaBeritaPage({ params, }: { params: Promise<{ slug: 
       setTitleDescription("Berita pilihan dari berbagai sumber eksternal");
     }
 
-    const reloadNews = async () => {
-      const response = await fetch("/api/news/list", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({}),
-      });
-
-      const result = await response.json();
-      if (result.success) {
-        setNews(result.result);
-      }
-    };
-
+    reloadCategory();
     reloadNews();
   }, []);
 
+  const reloadCategory = async () => {
+    const response = await fetch("/api/news/cat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({}),
+    });
+
+    const result = await response.json();
+    if (result.success) {
+      setCategory(result.result);
+    }
+  };
+
+  const reloadNews = async () => {
+    let bodysend = {}
+    if (slug=='insight') {
+      bodysend = { srcType: "IN" }
+    } else {
+      bodysend = { srcType: "EX" }
+    }
+    const response = await fetch("/api/news/list", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(bodysend),
+    });
+
+    const result = await response.json();
+    if (result.success) {
+      setNews(result.result);
+    }
+  };
+
+
+  const hndlSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+
+    // ==== BERITA INSIGHT =====
+    if(newsType==="in") {
+
+      // === TAMBAH BERITA ===
+      if(modalType==="add") {
+
+        let bodysend = {}
+        if(chgFileUpload) {
+
+          const resUpload = await uploadFileAction(formData);
+          if (resUpload.success) {
+            bodysend = {
+              srcType: "IN", newsCatId: fieldNewsCatId, newsTitle: fieldNewsTitle, 
+              authorBy: fieldAuthor, newsContent: fieldContent, createdBy: fieldAuthor, 
+              imgUrl: resUpload.filepath, isPublished: fieldNewsStatus,
+              isHeadline: fieldIsHeadline,
+            };
+          } 
+        } else {
+          bodysend = {
+            srcType: "IN", newsCatId: fieldNewsCatId, newsTitle: fieldNewsTitle, 
+            authorBy: fieldAuthor, newsContent: fieldContent, createdBy: fieldAuthor, 
+            isPublished: fieldNewsStatus,
+            isHeadline: fieldIsHeadline,
+          };
+        }
+        
+
+        const response = await fetch("/api/news/ins", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(bodysend),
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            Swal.fire({
+              title: "",
+              text: "Data Anda telah berhasil diinput",
+              icon: "success",
+              background: "#111",
+              color: "#fff",
+              confirmButtonColor: "#f97316",
+            }).then(() => {
+              reloadNews();
+            });
+        }
+      }
+      
+      // === EDIT BERITA ===
+      if(modalType==="edit") {
+        
+        let bodysend = {}
+        if(chgFileUpload) {
+          
+          const resUpload = await uploadFileAction(formData);
+          if (resUpload.success) {
+            
+            bodysend = {
+              srcType: "IN", newsId:selectedNews?.newsId, newsCatId: fieldNewsCatId, newsTitle: fieldNewsTitle, 
+              authorBy: fieldAuthor, newsContent: fieldContent, updatedBy: fieldAuthor, 
+              imgUrl: resUpload.filepath, isPublished: fieldNewsStatus,
+              isHeadline: fieldIsHeadline,
+            };
+          } 
+        } else {
+          bodysend = {
+            srcType: "IN", newsId:selectedNews?.newsId, newsCatId: fieldNewsCatId, newsTitle: fieldNewsTitle, 
+            authorBy: fieldAuthor, newsContent: fieldContent, updatedBy: fieldAuthor, 
+            isPublished: fieldNewsStatus,
+            isHeadline: fieldIsHeadline,
+          };
+        }
+
+        const response = await fetch("/api/news/upd", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(bodysend),
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            Swal.fire({
+              title: "",
+              text: "Data Anda telah diperbarui",
+              icon: "success",
+              background: "#111",
+              color: "#fff",
+              confirmButtonColor: "#f97316",
+            }).then(() => {
+              reloadNews();
+            });
+        }
+      }
+      
+      setIsModalOpen(false);
+
+
+    // ====== FEED NEWS ====== //
+    } else {
+
+      // === TAMBAH BERITA FEED ===
+      if(modalType==="add") {
+
+        let bodysend = {}
+        if(chgFileUpload) {
+
+          const resUpload = await uploadFileAction(formData);
+          if (resUpload.success) {
+            bodysend = {
+              srcType: "EX", newsTitle: fieldNewsTitle, newsContent: fieldContent, 
+              srcNews: fieldSrcNews, srcUrl: fieldSrcUrl, createdBy: "admin", 
+              imgUrl: resUpload.filepath, isPublished: fieldNewsStatus,
+            };
+          } 
+        } else {
+          bodysend = {
+            srcType: "EX", newsTitle: fieldNewsTitle, newsContent: fieldContent, 
+            srcNews: fieldSrcNews, srcUrl: fieldSrcUrl, createdBy: "admin", 
+            isPublished: fieldNewsStatus,
+          };
+        }
+        
+
+        const response = await fetch("/api/news/ins", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(bodysend),
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            Swal.fire({
+              title: "",
+              text: "Data Anda telah berhasil diinput",
+              icon: "success",
+              background: "#111",
+              color: "#fff",
+              confirmButtonColor: "#f97316",
+            }).then(() => {
+              reloadNews();
+            });
+        }
+      }
+      
+      // === EDIT BERITA FEED ===
+      if(modalType==="edit") {
+        
+        let bodysend = {}
+        if(chgFileUpload) {
+          
+          const resUpload = await uploadFileAction(formData);
+          if (resUpload.success) {
+            bodysend = {
+              srcType: "EX", newsId:selectedNews?.newsId, newsTitle: fieldNewsTitle, newsContent: fieldContent, 
+              srcNews: fieldSrcNews, srcUrl: fieldSrcUrl, updatedBy: "admin", 
+              imgUrl: resUpload.filepath, isPublished: fieldNewsStatus,
+            };
+          } 
+        } else {
+          bodysend = {
+            srcType: "EX", newsId:selectedNews?.newsId, newsTitle: fieldNewsTitle, newsContent: fieldContent, 
+            srcNews: fieldSrcNews, srcUrl: fieldSrcUrl, updatedBy: "admin", 
+            isPublished: fieldNewsStatus,
+          };
+        }
+
+        const response = await fetch("/api/news/upd", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(bodysend),
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            Swal.fire({
+              title: "",
+              text: "Data Anda telah diperbarui",
+              icon: "success",
+              background: "#111",
+              color: "#fff",
+              confirmButtonColor: "#f97316",
+            }).then(() => {
+              reloadNews();
+            });
+        }
+      }
+      
+      setIsModalOpen(false);
+
+    }
+  }
+
+
+  const hndlDelete = async (newstyp:string, newsId: number) => {
+
+      Swal.fire({
+        title: "",
+        text: "Anda yakin ingin menghapus?",
+        icon: "question",
+        background: "#111",
+        color: "#fff",
+        showCancelButton: true,
+        confirmButtonColor: "#f97316",
+        cancelButtonColor: "#523232",
+        confirmButtonText: "Ya",
+        cancelButtonText: "Tidak",
+      })
+      .then(async (result) => {
+        if (result.isConfirmed) {
+          const response = await fetch("/api/news/del", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({"newsId": newsId }),
+          });
+
+          const resultw = await response.json();
+          if (resultw.success) {
+            Swal.fire({
+              title: "",
+              text: "Data Anda telah dihapus",
+              icon: "success",
+              background: "#111",
+              color: "#fff",
+              confirmButtonColor: "#f97316",
+            }).then(() => {
+              reloadNews();
+            });
+          }
+        }
+      })
+    
+  }
   
+  const statusPub = ["Draft", "Published"];
+  const sourceNews = ["Kompas.com", "LinkedIn", "TechInAsia", "Detik.com"]
 
   const [news, setNews] = useState<News[]>([]);
+  const [category, setCategory] = useState<Category[]>([]);
+  const [selectedNews, setSelectedNews] = useState<News | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState<"add" | "edit">("add");
 
@@ -99,6 +337,17 @@ export default function KelolaBeritaPage({ params, }: { params: Promise<{ slug: 
   const [titleDescription, setTitleDescription] = useState("");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+
+  // State Field
+  const [fieldNewsTitle, setNewsTitle] = useState("");
+  const [fieldNewsCatId, setNewsCatId] = useState(1);
+  const [fieldAuthor, setAuthor] = useState("");
+  const [fieldContent, setContent] = useState("");
+  const [fieldNewsStatus, setNewsStatus] = useState(1);
+  const [chgFileUpload, setChgFileUpload] = useState(false);
+  const [fieldSrcNews, setSrcNews] = useState("");
+  const [fieldSrcUrl, setSrcUrl] = useState("");
+  const [fieldIsHeadline, setIsHeadline] = useState(0);
 
   return (
     <div className="p-8 md:p-12 max-w-7xl mx-auto">
@@ -111,7 +360,19 @@ export default function KelolaBeritaPage({ params, }: { params: Promise<{ slug: 
         <button 
           onClick={() => { 
             setModalType("add"); 
+            setSelectedNews(null);
+            // -- Set field value
+            setNewsTitle("");
+            setNewsCatId(1);
+            setAuthor("");
+            setContent("");
+            setNewsStatus(1);
             setImagePreview(null);
+            setChgFileUpload(false);
+            setSrcNews("");
+            setSrcUrl("");
+            setIsHeadline(0);
+
             setIsModalOpen(true); 
           }}
           className="flex items-center gap-2 px-6 py-3 bg-orange-500 text-black text-xs font-black uppercase tracking-widest rounded-xl hover:bg-orange-400 transition-all active:scale-95 shadow-[0_0_15px_rgba(249,115,22,0.3)]"
@@ -126,9 +387,19 @@ export default function KelolaBeritaPage({ params, }: { params: Promise<{ slug: 
           <thead>
             <tr className="bg-[#0a0a0a] border-b border-white/10 text-xs font-black uppercase tracking-widest text-gray-500">
               <th className="p-5 font-medium w-16">ID</th>
-              <th className="p-5 font-medium">Judul Artikel</th>
-              <th className="p-5 font-medium">Author</th>
-              <th className="p-5 font-medium">Tanggal</th>
+              <th className="p-5 font-medium">Judul Berita</th>
+              {newsType==="in" ? (
+                <>
+                  <th className="p-5 font-medium">Kategori</th>
+                  <th className="p-5 font-medium">Penulis</th>
+                </>
+              ) : (
+                <>
+                  <th className="p-5 font-medium">Sumber</th>
+                </>
+              )}
+              
+              <th className="p-5 font-medium">Tgl dibuat</th>
               <th className="p-5 font-medium">Status</th>
               <th className="p-5 font-medium text-center">Aksi</th>
             </tr>
@@ -136,52 +407,69 @@ export default function KelolaBeritaPage({ params, }: { params: Promise<{ slug: 
           <tbody className="text-sm font-medium text-gray-300">
             {news.map((item) => (
               <tr key={item.newsId} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
-                <td className="p-5 text-gray-500">#{item.newsId}</td>
-                <td className="p-5 text-white font-bold flex items-center gap-3 min-w-[300px]">
-                  <div className="w-8 h-8 rounded-lg bg-white/5 text-gray-400 flex items-center justify-center flex-shrink-0">
-                    <FileText size={16} />
-                  </div>
-                  <span className="line-clamp-1">{item.newsTitle}</span>
+                <td className="p-3 text-gray-500">#{item.newsId}</td>
+                <td className="p-3 flex items-center gap-3 min-w-[300px]">
+                  {item?.srcUrl ? (
+                    <a href={item?.srcUrl} target="_blank" className="line-clamp-1 text-blue">{item.newsTitle}</a>
+                  ) : (
+                    <span className="line-clamp-1 text-white font-bold">{item.newsTitle}</span>
+                  ) }
                 </td>
-                <td className="p-5">
-                  
-                    {item.authorBy}
-                  
-                  {/* {item.type === "Internal" ? ( */}
-                    {/* <span className="flex items-center gap-1 text-[10px] font-bold text-orange-500 bg-orange-500/10 px-2 py-1 rounded-md w-max border border-orange-500/20 uppercase tracking-widest">
-                      <Globe size={12} /> NSC: {item.newsCatId}
-                    </span> */}
-                  {/* ) : (
-                    <span className="flex items-center gap-1 text-[10px] font-bold text-blue-400 bg-blue-500/10 px-2 py-1 rounded-md w-max border border-blue-500/20 uppercase tracking-widest">
-                      <Rss size={12} /> {item.sourceName}
-                    </span>
-                  )} */}
+                {newsType==="in" ? (
+                  <>
+                    <td className="p-3">{item.newsCatName}</td>
+                    <td className="p-3">{item.authorBy}</td>
+                  </>
+                ) : (
+                  <>
+                    <td className="p-3">{item.srcNews}</td>
+                  </>
+                )}
+                <td className="p-3 text-xs">
+                  {
+                    (item.createdAt) ? new Date(item.createdAt).toLocaleDateString('UTC', formatDateTime) : 'N/A'
+                  }
                 </td>
-                <td className="p-5">{item.createdAt}</td>
-                <td className="p-5">
+                <td className="p-3 text-center">
                   <span className={`px-3 py-1 text-[10px] uppercase tracking-wider font-bold rounded-md border ${
                     item.isPublished == 1 
                       ? 'bg-green-500/10 border-green-500/20 text-green-500' 
                       : 'bg-yellow-500/10 border-yellow-500/20 text-yellow-500'
                   }`}>
-                    published
-                    {/* {item.status} */}
+                    {statusPub[item.isPublished]}
                   </span>
                 </td>
-                <td className="p-5">
+                <td className="p-3">
                   <div className="flex items-center justify-center gap-2">
                     <button 
                       onClick={() => { 
                         setModalType("edit"); 
                         // setNewsType(item.type as "Internal" | "External");
+                        setSelectedNews(item);
+                        // -- Set field value
+                        setNewsTitle(item.newsTitle);
+                        setNewsCatId(item.newsCatId);
+                        setAuthor(item.authorBy);
+                        setContent(item.newsContent);
+                        setNewsStatus(item.isPublished);
                         setImagePreview(item.imgUrl);
+                        setChgFileUpload(false);
+                        setSrcNews(item.srcNews);
+                        setSrcUrl(item.srcUrl);
+                        setIsHeadline(item.isHeadline);
+
                         setIsModalOpen(true); 
                       }}
                       className="p-2 rounded-lg bg-blue-500/10 text-blue-500 hover:bg-blue-500 hover:text-white transition-all"
                     >
                       <Edit2 size={16} />
                     </button>
-                    <button className="p-2 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all">
+                    <button 
+                      onClick={() => { 
+                        hndlDelete(newsType, item.newsId);
+                      }}
+                      className="p-2 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all"
+                    >
                       <Trash2 size={16} />
                     </button>
                   </div>
@@ -205,7 +493,7 @@ export default function KelolaBeritaPage({ params, }: { params: Promise<{ slug: 
               </div>
 
               {/* TODO (Backend): Form Submit Multipart/Form-Data untuk Foto */}
-              <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); setIsModalOpen(false); }}>
+              <form className="space-y-8" onSubmit={hndlSubmit}>
                 
                 {/* PILIHAN TIPE BERITA */}
                 {/* <div className="flex gap-4 p-2 bg-black border border-white/10 rounded-xl">
@@ -227,7 +515,7 @@ export default function KelolaBeritaPage({ params, }: { params: Promise<{ slug: 
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {/* KOLOM KIRI (GAMBAR) */}
-                  <div className="md:col-span-1 space-y-4">
+                  <div className="md:col-span-1 space-y-6">
                     <div>
                       <label className="block text-xs font-bold uppercase text-gray-400 mb-2">Gambar / Thumbnail</label>
                       <div 
@@ -237,23 +525,29 @@ export default function KelolaBeritaPage({ params, }: { params: Promise<{ slug: 
                           e.preventDefault();
                           setIsDragging(false);
                           const file = e.dataTransfer.files[0];
-                          if (file && file.type.startsWith("image/")) setImagePreview(URL.createObjectURL(file));
+                          if (file && file.type.startsWith("image/")) {
+                            setImagePreview(URL.createObjectURL(file));
+                            // setIsDragging(true);
+                          }
                         }}
                         className={`relative flex flex-col items-center justify-center w-full h-48 md:h-56 border-2 border-dashed rounded-xl transition-all overflow-hidden bg-black
                           ${isDragging ? 'border-orange-500 bg-orange-500/10' : 'border-white/10 hover:border-orange-500/50 cursor-pointer'}`}
                       >
                         <input 
-                          type="file" accept="image/png, image/jpeg, image/jpg" 
+                          type="file" name="file" accept="image/png, image/jpeg, image/jpg" 
                           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
                           onChange={(e) => {
+                            setChgFileUpload(true);
                             const file = e.target.files?.[0];
-                            if (file) setImagePreview(URL.createObjectURL(file));
+                            if (file) { 
+                              setImagePreview(URL.createObjectURL(file));
+                            }
                           }}
                         />
                         {imagePreview ? (
                           <>
-                            <img src={imagePreview} alt="Preview" className="absolute inset-0 w-full h-full object-cover opacity-60" />
-                            <div className="absolute inset-0 flex items-center justify-center z-20">
+                            <Image src={imagePreview} alt="Preview" className="absolute fill inset-0 w-full h-full object-cover opacity-70 hover:opacity-90" width={500} height={500} />
+                            <div className="absolute inset-0 flex items-center justify-center z-20 hidden">
                               <span className="px-4 py-2 bg-black/80 rounded-lg text-[10px] font-bold text-white border border-white/20 pointer-events-none text-center">Klik / Drag untuk<br/>Ganti Gambar</span>
                             </div>
                           </>
@@ -271,46 +565,50 @@ export default function KelolaBeritaPage({ params, }: { params: Promise<{ slug: 
                   {/* KOLOM KANAN (DATA) */}
                   <div className="md:col-span-2 space-y-4">
                     <div>
-                      <label className="block text-xs font-bold uppercase text-gray-400 mb-2">Judul Artikel</label>
-                      <input type="text" className="w-full bg-black border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-orange-500" placeholder="Ketik judul berita..." required />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-xs font-bold uppercase text-gray-400 mb-2">Tanggal / Waktu</label>
-                        <input type="text" className="w-full bg-black border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-orange-500" placeholder="Misal: 23 April 2026 atau 3 Jam lalu" required />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold uppercase text-gray-400 mb-2">Status</label>
-                        <select className="w-full bg-black border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-orange-500">
-                          <option value="draft">Draft</option>
-                          <option value="published">Publish</option>
-                        </select>
-                      </div>
+                      <label className="block text-xs font-bold uppercase text-gray-400 mb-2">Judul Berita</label>
+                      <input type="text" 
+                        className="w-full bg-black border border-white/10 rounded-xl p-2 text-white text-sm focus:outline-none focus:border-orange-500" 
+                        placeholder="" 
+                        value={fieldNewsTitle}
+                        onChange={ (e)=> setNewsTitle(e.target.value) }
+                        required />
                     </div>
 
                     {/* FIELD KHUSUS INTERNAL NSC */}
                     {newsType === "in" && (
                       <>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-2 md:grid-cols-2 gap-4">
                           <div>
                             <label className="block text-xs font-bold uppercase text-gray-400 mb-2">Kategori</label>
-                            <select className="w-full bg-black border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-orange-500">
-                              {categories.map((cat) => <option key={cat} value={cat}>{cat}</option>)}
+                            <select className="w-full bg-black border border-white/10 rounded-xl p-2 text-white text-sm focus:outline-none focus:border-orange-500"
+                              value={fieldNewsCatId}
+                              onChange={ (e)=> setNewsCatId(parseInt(e.target.value)) }
+                            >
+                              {category.map((cat) => (
+                                <option key={cat.newsCatId} value={cat.newsCatId}>{cat.newsCatName}</option>
+                              )
+                            )}
                             </select>
                           </div>
                           <div>
                             <label className="block text-xs font-bold uppercase text-gray-400 mb-2">Penulis</label>
-                            <input type="text" className="w-full bg-black border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-orange-500" placeholder="Misal: Tim Redaksi NSC" />
-                          </div>
-                          <div className="col-span-2 md:col-span-1">
-                            <label className="block text-xs font-bold uppercase text-gray-400 mb-2">Waktu Baca</label>
-                            <input type="text" className="w-full bg-black border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-orange-500" placeholder="Misal: 4 Menit" />
+                            <input type="text" 
+                              className="w-full bg-black border border-white/10 rounded-xl p-2 text-white text-sm focus:outline-none focus:border-orange-500" 
+                              placeholder=""
+                              value={fieldAuthor}
+                              onChange={ (e)=> setAuthor(e.target.value) }
+                            />
                           </div>
                         </div>
+
                         <div>
-                          <label className="block text-xs font-bold uppercase text-gray-400 mb-2">Konten Lengkap Berita</label>
-                          <textarea rows={6} className="w-full bg-black border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-orange-500 resize-none custom-scrollbar" placeholder="Tulis isi berita di sini..." required />
+                          <label className="block text-xs font-bold uppercase text-gray-400 mb-2">Konten Berita</label>
+                          <textarea rows={10} 
+                            className="w-full bg-black border border-white/10 rounded-xl p-2 text-white text-sm focus:outline-none focus:border-orange-500 resize-none custom-scrollbar" 
+                            placeholder="Tulis isi berita..." 
+                            value={fieldContent}
+                            onChange={ (e)=> setContent(e.target.value) }
+                            required />
                         </div>
                       </>
                     )}
@@ -318,29 +616,90 @@ export default function KelolaBeritaPage({ params, }: { params: Promise<{ slug: 
                     {/* FIELD KHUSUS EXTERNAL FEED */}
                     {newsType === "ex" && (
                       <>
-                        <div className="grid grid-cols-2 gap-4">
+                        {/* <div className="grid grid-cols-2 gap-4">
                           <div>
                             <label className="block text-xs font-bold uppercase text-gray-400 mb-2">Nama Sumber</label>
-                            <input type="text" className="w-full bg-black border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-orange-500" placeholder="Misal: Kompas, LinkedIn, dll" required />
+                            <input type="text" className="w-full bg-black border border-white/10 rounded-xl p-2 text-white focus:outline-none focus:border-orange-500" placeholder="Misal: Kompas, LinkedIn, dll" required />
                           </div>
                           <div>
                             <label className="block text-xs font-bold uppercase text-gray-400 mb-2">Link Sumber URL</label>
-                            <input type="url" className="w-full bg-black border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-orange-500" placeholder="https://..." required />
+                            <input type="url" className="w-full bg-black border border-white/10 rounded-xl p-2 text-white focus:outline-none focus:border-orange-500" placeholder="https://..." required />
                             <p className="text-[9px] text-gray-500 mt-1">Logo akan diambil otomatis dari URL (Favicon) di halaman user.</p>
                           </div>
-                        </div>
+                        </div> */}
+                          <div>
+                            <label className="block text-xs font-bold uppercase text-gray-400 mb-2">Sumber Berita</label>
+                            <select 
+                              className="w-full bg-black border border-white/10 rounded-xl p-2 text-white text-sm focus:outline-none focus:border-orange-500"
+                              value={fieldSrcNews}
+                              onChange={ (e)=> setSrcNews(e.target.value) }
+                            >
+                              <option value="">-- pilih sumber berita --</option>
+                              {sourceNews.map((srcn, i) => (
+                                <option key={srcn} value={srcn}>{srcn}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-xs font-bold uppercase text-gray-400 mb-2">Link URL</label>
+                            <input type="url" className="w-full bg-black border border-white/10 rounded-xl p-2 text-white text-sm focus:outline-none focus:border-orange-500" 
+                              placeholder="http:// or https://..." 
+                              value={fieldSrcUrl}
+                              onChange={ (e)=> setSrcUrl(e.target.value) }
+                              required 
+                            />
+                          </div>
                         <div>
-                          <label className="block text-xs font-bold uppercase text-gray-400 mb-2">Kutipan Singkat (Excerpt)</label>
-                          <textarea rows={4} className="w-full bg-black border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-orange-500 resize-none" placeholder="Tulis kutipan singkat artikel sumber..." required />
+                          <label className="block text-xs font-bold uppercase text-gray-400 mb-2">Kutipan Isi Berita</label>
+                          <textarea rows={8} className="w-full bg-black border border-white/10 rounded-xl p-2 text-white text-sm focus:outline-none focus:border-orange-500 resize-none" 
+                            placeholder="Tulis kutipan singkat artikel sumber..." 
+                            value={fieldContent}
+                            onChange={ (e)=> setContent(e.target.value) }
+                            required 
+                          />
                         </div>
                       </>
                     )}
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold uppercase text-gray-400 mb-2">Status</label>
+                        <select 
+                          className="w-full bg-black border border-white/10 rounded-xl p-2 text-white text-sm focus:outline-none focus:border-orange-500"
+                          value={fieldNewsStatus}
+                          onChange={ (e)=> setNewsStatus(parseInt(e.target.value)) }
+                        >
+                          <option value={0}>Draft</option>
+                          <option value={1}>Published</option>
+                        </select>
+                      </div>
+                      {newsType === "in" && modalType === "edit" && (
+                        <div>
+                          <label className="block text-xs font-bold uppercase text-gray-400 mb-2">Jadikan Headline?</label>
+                          <select 
+                            className="w-full bg-black border border-white/10 rounded-xl p-2 text-white text-sm focus:outline-none focus:border-orange-500"
+                            value={fieldIsHeadline}
+                            onChange={ (e)=> setIsHeadline(parseInt(e.target.value)) }
+                          >
+                            <option value={0}>tidak</option>
+                            <option value={1}>YA</option>
+                          </select>
+                        </div>
+                      )}
+                      {/* <div>
+                        <label className="block text-xs font-bold uppercase text-gray-400 mb-2">&nbsp;</label>
+                        <input type="text" className="w-full bg-black border border-white/10 rounded-xl p-2 text-white text-xs focus:outline-none focus:border-orange-500" 
+                          defaultValue={new Date().toLocaleDateString('id-ID', formatDateTime)}
+                          readOnly
+                        />
+                      </div> */}
+                    </div>
 
                   </div>
                 </div>
 
                 <button type="submit" className="w-full py-4 rounded-xl bg-orange-500 text-black text-xs font-black uppercase tracking-widest hover:bg-orange-400 transition-all shadow-[0_0_15px_rgba(249,115,22,0.3)]">
-                  {modalType === "add" ? "Posting Berita" : "Simpan Perubahan"}
+                  {modalType === "add" ? "Posting Berita" : "Simpan"}
                 </button>
               </form>
             </motion.div>

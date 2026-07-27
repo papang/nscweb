@@ -2,20 +2,54 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { ArrowLeft, Lock, Mail } from "lucide-react";
+import { ArrowLeft, Lock, Mail, User } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Swal from "sweetalert2";
+import bcrypt from "bcryptjs";
 
 export default function AdminLoginPage() {
   const router = useRouter();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
   e.preventDefault();
   
-  // SIMULASI FRONTEND (Nanti dihapus saat integrasi Backend)
-  // Membuat cookie bohongan agar Middleware membiarkan kita masuk
-  document.cookie = "admin_token=dummy_token_123; path=/";
+  // document.cookie = "admin_token=dummy_token_123; path=/";
   
-  router.push("/admin"); 
+  // router.push("/admin"); 
+  const formData = new FormData(e.currentTarget);
+
+  const userId = formData.get("username");
+  const plainPasswd = String(formData.get("passwd") );
+  // const hashPasswd = await bcrypt.hash((plainPasswd + (process.env.SALT_KEY || "")),10);
+
+  const response = await fetch( "/api/auth/login/admin",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        userId: userId, passwd: plainPasswd, 
+      }),
+    }
+  );
+
+  const result = await response.json();
+
+  if (result.success) {
+    window.location.href="/admin";
+  } else {
+    if(result.message=="Username atau password Anda salah") {
+      Swal.fire({
+        title: "",
+        text: "Username atau Password Anda salah",
+        icon: "error"
+      });
+    } else {
+      alert(result.message);
+    }
+  }
+
 };
 
   return (
@@ -40,12 +74,12 @@ export default function AdminLoginPage() {
 
         <form onSubmit={handleLogin} className="space-y-5">
           <div className="space-y-2">
-            <label className="text-[11px] font-black uppercase tracking-widest text-gray-400">Email Address</label>
+            <label className="text-[11px] font-black uppercase tracking-widest text-gray-400">User ID</label>
             <div className="relative">
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
+              <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
               <input 
-                type="email" 
-                placeholder="admin@nsc.id"
+                type="text" name="username"
+                placeholder=""
                 required
                 className="w-full bg-black border border-white/10 rounded-xl py-3.5 pl-12 pr-4 text-white text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all"
               />
@@ -57,8 +91,8 @@ export default function AdminLoginPage() {
             <div className="relative">
               <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
               <input 
-                type="password" 
-                placeholder="••••••••"
+                type="password" name="passwd"
+                placeholder=""
                 required
                 className="w-full bg-black border border-white/10 rounded-xl py-3.5 pl-12 pr-4 text-white text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all"
               />
@@ -69,7 +103,7 @@ export default function AdminLoginPage() {
             type="submit"
             className="w-full mt-4 py-4 rounded-xl bg-orange-500 text-black text-[11px] font-black uppercase tracking-[0.2em] hover:bg-orange-400 transition-all active:scale-95 shadow-[0_0_15px_rgba(249,115,22,0.3)]"
           >
-            Masuk Sistem
+            Sign In
           </button>
         </form>
 

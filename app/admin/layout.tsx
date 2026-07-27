@@ -1,10 +1,44 @@
 "use client";
 
 import Link from "next/link";
+import {useEffect, useState} from "react";
+import {redirect} from "next/navigation";
 import { usePathname, useRouter, useSearchParams } from "next/navigation"; // Tambahkan useRouter
 import { Package, Newspaper, LogOut, LayoutDashboard, ChevronRight, ChevronDown } from "lucide-react";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
+
+  const [sessionInfo, setSessionInfo] = useState({});
+
+  useEffect(() => {
+    useAuth();
+  }, []);
+
+  const useAuth = async() => {
+    const response = await fetch( "/api/auth/me",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          roleType: "ADMIN", 
+        }),
+      }
+    );
+
+    const result = await response.json();
+    if(result) {
+      
+      if(!(result.authenticated)) 
+        redirect("/admin/login");
+
+      setSessionInfo(result?.data);
+    }
+    
+  }
+
+
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -28,15 +62,20 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       { id: "m_news_ekstern", name: "Berita Eksternal", icon: "", path: "/admin/berita/ekstern" },
     ]},
     // { name: "Karir", icon: <Package size={18} />, path: "/admin/karir" },
+    // { name: "Galeri", icon: <Package size={18} />, path: "/admin/galeri" },
     { id: "m_produk", name: "Produk", icon: <Package size={18} />, path: "/admin/produk" },
     
   ];
 
   // --- FUNGSI LOGOUT ---
-  const handleLogout = () => {
+  const handleLogout = async () => {
     // 1. Hapus cookie
-    document.cookie = "admin_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    // document.cookie = "admin_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
     
+    await fetch("/api/auth/logout", {
+      method: "POST",
+    });
+
     // 2. Arahkan kembali ke halaman login
     router.push("/admin/login");
   };

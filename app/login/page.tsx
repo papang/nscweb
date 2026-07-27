@@ -75,9 +75,6 @@ export default function LoginPage() {
     );
 
     const result = await response.json();
-    if(result.success) {
-      
-    }
 
     if (result.success) {
       window.location.href="/";

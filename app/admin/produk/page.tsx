@@ -83,8 +83,8 @@ export default function KelolaProdukPage() {
       <section>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div>
-            <h2 className="text-2xl font-bold text-white mb-1">Kelola Kategori</h2>
-            <p className="text-sm font-medium text-gray-400">Atur kategori produk Akastar.</p>
+            <h2 className="text-2xl font-bold text-white mb-1">Kategori</h2>
+            <p className="text-sm font-medium text-gray-400">Pengaturan kategori layanan.</p>
           </div>
           <button 
             onClick={() => { setCatModalType("add"); setIsCatModalOpen(true); }}
@@ -96,14 +96,21 @@ export default function KelolaProdukPage() {
 
         <div className="flex flex-wrap gap-3">
           {categories.map((cat) => (
-            <div key={cat.id} className="flex items-center gap-3 px-4 py-2 bg-[#0a0a0a] border border-white/10 rounded-xl">
-              <span className="text-sm font-bold text-gray-300">{cat.name}</span>
-              <div className="flex items-center gap-1 border-l border-white/10 pl-3">
+            <div key={cat.id} className="flex items-center gap-3 px-4 py-2 bg-[#0a0a0a] border border-white/30 rounded-xl hover:border-orange-500/70 cursor-pointer">
+              
+              <div className="flex items-center gap-1 border-l border-white/30 pl-3 cursor-pointer">
                 <button 
                   onClick={() => { setCatModalType("edit"); setIsCatModalOpen(true); }}
-                  className="text-blue-500 hover:text-blue-400 transition-colors"
-                ><Edit2 size={14} /></button>
-                <button className="text-red-500 hover:text-red-400 transition-colors"><Trash2 size={14} /></button>
+                >
+                  <span className="text-sm font-bold text-gray-300 pr-3 cursor-pointer">{cat.name}</span>
+                  {/* <Edit2 size={14} /> */}
+                </button>
+                <button 
+                  className="text-red-500 hover:text-orange-300 transition-colors" 
+                  onClick={() => { setCatModalType("edit"); setIsCatModalOpen(true); }}
+                >
+                  <Trash2 size={18} />
+                </button>
               </div>
             </div>
           ))}
@@ -116,8 +123,8 @@ export default function KelolaProdukPage() {
       <section>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">Kelola Produk</h1>
-            <p className="text-sm font-medium text-gray-400">Atur inventaris perangkat keras dan paket layanan.</p>
+            <h1 className="text-3xl font-bold text-white mb-2">Produk</h1>
+            <p className="text-sm font-medium text-gray-400">Pengaturan produk yang ditampilkan pada etalase web.</p>
           </div>
           <button 
             onClick={() => { 
