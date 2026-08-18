@@ -5,9 +5,25 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Edit2, Trash2, X, PackageOpen, Globe, Zap, Satellite, MonitorCheck, ShieldCheck, Cpu, Wifi, Upload } from "lucide-react";
 import Swal from "sweetalert2";
 
+const formatDateTime: Intl.DateTimeFormatOptions = {
+  timeZone: "UTC",
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false // Forces 24-hour format
+}
+
 // Data Type
 interface JobType {
   typeId: number, typeName: string, description: string
+}
+interface Job {
+  jobId: number, jobTitle: string, category: string, typeId: number, typeName: string,
+  location: string,  jobDesc: string, qualifications: string[],
+  createdBy: string, updatedBy: string, isPublished: number,
+  createdAt: string, updatedAt: string,
 }
 
 // TODO (Backend): Fetch data produk dari API
@@ -52,6 +68,7 @@ export default function KelolaKarirPage() {
 
   useEffect(() => {
       reloadJobType();
+      reloadData();
     }, []);
 
   const reloadJobType = async () => {
@@ -69,12 +86,30 @@ export default function KelolaKarirPage() {
     }
   };
 
+  const reloadData = async () => {
+    const response = await fetch("/api/career/list", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({}),
+    });
+
+    const result = await response.json();
+    if (result.success) {
+      setProducts(result.result);
+    }
+  };
+
+  const timeType = ["Full-time", "Part-time"];
+
   const [jobType, setJobType] = useState<JobType[]>([]);
   const [selJobType, setSelJobType] = useState<JobType | null>(null);
   const [isTypeModalOpen, setIsTypeModalOpen] = useState(false);
   const [catModalType, setCatModalType] = useState<"add" | "edit">("add");
 
-  const [products, setProducts] = useState(initialProducts);
+  const [products, setProducts] = useState<Job[]>([]);
+  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [isProdModalOpen, setIsProdModalOpen] = useState(false);
   const [prodModalType, setProdModalType] = useState<"add" | "edit">("add");
 
@@ -165,6 +200,81 @@ export default function KelolaKarirPage() {
 
   }
 
+  const hndlSubmitData = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+
+    // === TAMBAH JOB ===
+    if(prodModalType==="add") {
+
+      const response = await fetch("/api/career/ins", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          jobTitle: formData.get("job_title"), 
+          category: formData.get("job_cat"), 
+          typeId: formData.get("job_type_id"), 
+          location: formData.get("location"),  
+          jobDesc: formData.get("job_desc"),
+          qualifications: specs,
+        }),
+      });
+
+      const result = await response.json();
+      if (result.success) {
+          Swal.fire({
+            title: "",
+            text: "Data Anda telah berhasil diinput",
+            icon: "success",
+            background: "#111",
+            color: "#fff",
+            confirmButtonColor: "#f97316",
+          }).then(() => {
+            reloadData();
+          });
+      }
+    }
+    
+    // === EDIT JOB ===
+    if(prodModalType==="edit") {
+
+      const response = await fetch("/api/career/upd", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          jobId: selectedJob?.jobId, 
+          jobTitle: formData.get("job_title"), 
+          category: formData.get("job_cat"), 
+          typeId: formData.get("job_type_id"), 
+          location: formData.get("location"),  
+          jobDesc: formData.get("job_desc"),
+          qualifications: specs,
+        }),
+      });
+
+      const result = await response.json();
+      if (result.success) {
+          Swal.fire({
+            title: "",
+            text: "Data Anda telah diperbarui",
+            icon: "success",
+            background: "#111",
+            color: "#fff",
+            confirmButtonColor: "#f97316",
+          }).then(() => {
+            reloadData();
+          });
+      }
+    }
+    
+    setIsProdModalOpen(false);
+
+  }
+
   const hndlDeleteType = async (typeId: number) => {
       Swal.fire({
         title: "",
@@ -204,6 +314,48 @@ export default function KelolaKarirPage() {
         }
       })
     
+  }
+
+
+  const hndlDeleteData = async (jobId: number) => {
+    Swal.fire({
+      title: "",
+      text: "Anda yakin ingin menghapus?",
+      icon: "question",
+      background: "#111",
+      color: "#fff",
+      showCancelButton: true,
+      confirmButtonColor: "#f97316",
+      cancelButtonColor: "#523232",
+      confirmButtonText: "Ya",
+      cancelButtonText: "Tidak",
+    })
+    .then(async (result) => {
+      if (result.isConfirmed) {
+        const response = await fetch("/api/career/del", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({"jobId": jobId }),
+        });
+
+        const resultw = await response.json();
+        if (resultw.success) {
+          Swal.fire({
+            title: "",
+            text: "Data Anda telah dihapus",
+            icon: "success",
+            background: "#111",
+            color: "#fff",
+            confirmButtonColor: "#f97316",
+          }).then(() => {
+            reloadData();
+          });
+        }
+      }
+    })
+
   }
 
 
@@ -257,12 +409,13 @@ export default function KelolaKarirPage() {
       <section>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">Job</h1>
-            <p className="text-sm font-medium text-gray-400">Pengaturan daftar Job yang ditampilkan pada web.</p>
+            <h1 className="text-3xl font-bold text-white mb-2">Karir</h1>
+            <p className="text-sm font-medium text-gray-400">Pengaturan daftar kesempatan Karir yang ditampilkan pada web.</p>
           </div>
           <button 
             onClick={() => { 
               setProdModalType("add"); 
+              setSelectedJob(null);
               setSpecs([""]);
               setSelectedIcon("Satellite");
               setImagePreview(null);
@@ -270,7 +423,7 @@ export default function KelolaKarirPage() {
             }}
             className="flex items-center gap-2 px-6 py-3 bg-orange-500 text-black text-xs font-black uppercase tracking-widest rounded-xl hover:bg-orange-400 transition-all active:scale-95 shadow-[0_0_15px_rgba(249,115,22,0.3)]"
           >
-            <Plus size={16} /> Tambah Job
+            <Plus size={16} /> Tambah Karir
           </button>
         </div>
 
@@ -278,45 +431,52 @@ export default function KelolaKarirPage() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-[#0a0a0a] border-b border-white/10 text-xs font-black uppercase tracking-widest text-gray-500">
-                <th className="p-5 font-medium min-w-[250px]">Produk</th>
+                <th className="p-5 font-medium min-w-[250px]">Posisi Karir</th>
                 <th className="p-5 font-medium">Kategori</th>
-                <th className="p-5 font-medium">Harga</th>
+                <th className="p-5 font-medium">Tipe</th>
+                <th className="p-5 font-medium">Lokasi</th>
+                <th className="p-5 font-medium">Tgl Dibuat</th>
                 <th className="p-5 font-medium text-center">Aksi</th>
               </tr>
             </thead>
             <tbody className="text-sm font-medium text-gray-300">
               {products.map((prod) => (
-                <tr key={prod.id} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
+                <tr key={prod.jobId} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
                   <td className="p-5 text-white font-bold flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-orange-500/10 text-orange-500 flex items-center justify-center border border-orange-500/20">
-                      {ICON_MAP[prod.iconName] || <PackageOpen size={16} />}
-                    </div>
                     <div>
-                      <p>{prod.name}</p>
-                      <p className="text-[10px] text-gray-500 font-normal mt-0.5 line-clamp-1">{prod.description}</p>
+                      <p>{prod.jobTitle}</p>
+                      <p className="text-[10px] text-gray-500 font-normal mt-0.5 line-clamp-1 w-[500px]">{prod.jobDesc}</p>
                     </div>
                   </td>
                   <td className="p-5">
                     <span className="px-3 py-1 text-[10px] uppercase tracking-wider font-bold rounded-md bg-white/5 border border-white/10">
-                      {prod.category}
+                      {prod.typeName}
                     </span>
                   </td>
-                  <td className="p-5">Rp {prod.price}</td>
+                  <td className="p-5 w-[100px]">{prod.category}</td>
+                  <td className="p-5">{prod.location}</td>
+                  <td className="p-5 text-xs">
+                    {(prod.createdAt) ? new Date(prod.createdAt).toLocaleDateString('UTC', formatDateTime) : 'N/A'}
+                  </td>
                   <td className="p-5">
                     <div className="flex items-center justify-center gap-2">
                       <button 
                         onClick={() => { 
-                          setProdModalType("edit"); 
-                          setSpecs(prod.features);
-                          setSelectedIcon(prod.iconName);
-                          setImagePreview(prod.image);
+                          setProdModalType("edit");
+                          setSelectedJob(prod);
+                          setSpecs(prod?.qualifications);
+                          // setSelectedIcon(prod.iconName);
+                          // setImagePreview(prod.image);
                           setIsProdModalOpen(true); 
                         }}
                         className="p-2 rounded-lg bg-blue-500/10 text-blue-500 hover:bg-blue-500 hover:text-white transition-all"
                       >
                         <Edit2 size={16} />
                       </button>
-                      <button className="p-2 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all">
+                      <button 
+                        className="p-2 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all"
+                        onClick={() => { hndlDeleteData(prod.jobId)}}
+                      >
                         <Trash2 size={16} />
                       </button>
                     </div>
@@ -363,130 +523,85 @@ export default function KelolaKarirPage() {
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsProdModalOpen(false)} className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
             <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto custom-scrollbar bg-[#111111] border border-white/10 rounded-3xl p-8">
               <div className="flex justify-between items-center mb-6 sticky top-0 bg-[#111111] z-10 py-2 border-b border-white/10">
-                <h2 className="text-2xl font-bold text-white">{prodModalType === "add" ? "Tambah Produk" : "Edit Produk"}</h2>
+                <h2 className="text-2xl font-bold text-white">{prodModalType === "add" ? "Tambah Karir" : "Edit Karir"}</h2>
                 <button onClick={() => setIsProdModalOpen(false)} className="text-gray-500 hover:text-white"><X size={24} /></button>
               </div>
 
               {/* TODO (Backend): Integrasi POST/PUT Produk multipart/form-data untuk file gambar */}
-              <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); setIsProdModalOpen(false); }}>
+              <form className="space-y-6" onSubmit={hndlSubmitData}>
                 
+                <div>
+                  <label className="block text-xs font-bold uppercase text-gray-400 mb-2">Posisi Karir</label>
+                  <input type="text" name="job_title" 
+                    defaultValue={selectedJob?.jobTitle}
+                    className="w-full bg-black border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-orange-500" 
+                    placeholder="Posisi karir yang dibuka" 
+                    required
+                  />
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold uppercase text-gray-400 mb-2">Nama Produk</label>
-                    <input type="text" className="w-full bg-black border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-orange-500" placeholder="Misal: Akastar Secure" required />
-                  </div>
-                  <div>
                     <label className="block text-xs font-bold uppercase text-gray-400 mb-2">Kategori</label>
-                    <select className="w-full bg-black border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-orange-500" required>
-                      <option value="">Pilih Kategori...</option>
+                    <select name="job_type_id"
+                      defaultValue={selectedJob?.typeId}
+                      className="w-full bg-black border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-orange-500" 
+                      required
+                    >
+                      <option value="">pilih kategori...</option>
                       {
                         jobType.map((cat) => (<option key={cat?.typeId} value={cat.typeId}>{cat.typeName}</option>)
                       )}
                     </select>
                   </div>
+                  <div>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold uppercase text-gray-400 mb-2">Pilih Icon</label>
-                    <div className="flex flex-wrap gap-2">
-                      {ICON_OPTIONS.map((iconOpt) => (
-                        <button
-                          key={iconOpt.name}
-                          type="button"
-                          onClick={() => setSelectedIcon(iconOpt.name)}
-                          className={`p-3 rounded-xl border flex items-center justify-center transition-all 
-                            ${selectedIcon === iconOpt.name 
-                              ? "bg-orange-500/10 border-orange-500 text-orange-500" 
-                              : "bg-black border-white/10 text-gray-500 hover:border-orange-500/50 hover:text-orange-500"}`}
-                        >
-                          {iconOpt.component}
-                        </button>
-                      ))}
-                    </div>
+                    <label className="block text-xs font-bold uppercase text-gray-400 mb-2">Tipe</label>
+                    <select name="job_cat"
+                      defaultValue={selectedJob?.category}
+                      className="w-full bg-black border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-orange-500" 
+                      required
+                    >
+                      {
+                        timeType.map((typ, i) => (<option key={i} value={typ}>{typ}</option>)
+                      )}
+                    </select>
                   </div>
-
                   <div>
-                    <label className="block text-xs font-bold uppercase text-gray-400 mb-2">Harga (Rp)</label>
-                    <input type="text" className="w-full bg-black border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-orange-500" placeholder="Misal: 5.500.000" required />
-                  </div>
-                </div>
-
-                {/* --- DRAG & DROP IMAGE UPLOAD --- */}
-                <div>
-                  <label className="block text-xs font-bold uppercase text-gray-400 mb-2">Gambar Produk (PNG, JPG, JPEG)</label>
-                  <div 
-                    onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-                    onDragLeave={() => setIsDragging(false)}
-                    onDrop={(e) => {
-                      e.preventDefault();
-                      setIsDragging(false);
-                      const file = e.dataTransfer.files[0];
-                      // TODO (Backend): Simpan `file` ke state untuk dikirim ke API via FormData
-                      if (file && file.type.startsWith("image/")) {
-                        setImagePreview(URL.createObjectURL(file));
-                      }
-                    }}
-                    className={`relative flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-xl transition-all overflow-hidden bg-black
-                      ${isDragging ? 'border-orange-500 bg-orange-500/10' : 'border-white/10 hover:border-orange-500/50 cursor-pointer'}`}
-                  >
-                    {/* Input file disembunyikan tapi bisa di-klik di seluruh area div */}
-                    <input 
-                      type="file" 
-                      accept="image/png, image/jpeg, image/jpg" 
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        // TODO (Backend): Simpan `file` ke state
-                        if (file) setImagePreview(URL.createObjectURL(file));
-                      }}
-                    />
-                    
-                    {imagePreview ? (
-                      <>
-                        <img src={imagePreview} alt="Preview" className="absolute inset-0 w-full h-full object-cover opacity-60" />
-                        <div className="absolute inset-0 flex items-center justify-center z-20">
-                          <span className="px-4 py-2 bg-black/80 rounded-lg text-xs font-bold text-white border border-white/20 pointer-events-none">
-                            Klik / Drag untuk Upload Gambar
-                          </span>
-                        </div>
-                      </>
-                    ) : (
-                      <div className="flex flex-col items-center text-gray-500 pointer-events-none">
-                        <Upload size={32} className="mb-3 text-gray-400" />
-                        <span className="text-sm font-bold text-gray-300">Drag & Drop file ke sini</span>
-                        <span className="text-xs font-medium mt-1">atau klik untuk upload (PNG / JPG)</span>
-                      </div>
-                    )}
+                    <label className="block text-xs font-bold uppercase text-gray-400 mb-2">Lokasi</label>
+                    <input type="text" name="location"
+                      defaultValue={selectedJob?.location}
+                      className="w-full bg-black border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-orange-500" 
+                      placeholder="Lokasi penempatan" 
+                      required />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase text-gray-400 mb-2">Deskripsi Produk</label>
-                  <textarea rows={3} className="w-full bg-black border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-orange-500" placeholder="Tulis deskripsi..." required></textarea>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold uppercase text-gray-400 mb-2">Fitur Utama</label>
-                    <textarea rows={3} className="w-full bg-black border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-orange-500" placeholder="Pisahkan dengan koma atau deskripsikan..." required></textarea>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold uppercase text-gray-400 mb-2">Ideal Untuk</label>
-                    <textarea rows={3} className="w-full bg-black border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-orange-500" placeholder="Sektor industri, dll..." required></textarea>
-                  </div>
+                  <label className="block text-xs font-bold uppercase text-gray-400 mb-2">Deskripsi Pekerjaan</label>
+                  <textarea 
+                    rows={3} name="job_desc"
+                    defaultValue={selectedJob?.jobDesc}
+                    className="w-full bg-black border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-orange-500" 
+                    placeholder="Tulis deskripsi..." 
+                    required
+                  ></textarea>
                 </div>
 
                 {/* --- BAGIAN SPESIFIKASI TEKNIS DINAMIS --- */}
                 <div className="p-4 rounded-xl border border-white/10 bg-[#0a0a0a]">
                   <div className="flex justify-between items-center mb-4">
-                    <label className="block text-xs font-bold uppercase text-gray-400">Spesifikasi Teknis</label>
+                    <label className="block text-xs font-bold uppercase text-gray-400">Kualifikasi</label>
                     <button type="button" onClick={handleAddSpec} className="text-[10px] uppercase font-bold text-orange-500 flex items-center gap-1 hover:text-orange-400">
-                      <Plus size={12} /> Tambah Spesifikasi
+                      <Plus size={12} /> Tambah Kualifikasi
                     </button>
                   </div>
                   <div className="space-y-3">
-                    {specs.map((spec, index) => (
+                    {(specs?.length > 0) && specs.map((spec, index) => (
                       <div key={index} className="flex items-center gap-2">
                         <div className="w-2 h-2 rounded-full bg-orange-500 flex-shrink-0" />
                         <input 
@@ -494,7 +609,6 @@ export default function KelolaKarirPage() {
                           value={spec}
                           onChange={(e) => handleSpecChange(index, e.target.value)}
                           className="w-full bg-black border border-white/10 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-orange-500" 
-                          placeholder={`Spesifikasi ${index + 1}...`} 
                           required 
                         />
                         {specs.length > 1 && (
@@ -508,7 +622,7 @@ export default function KelolaKarirPage() {
                 </div>
 
                 <button type="submit" className="w-full py-4 rounded-xl bg-orange-500 text-black text-xs font-black uppercase tracking-widest hover:bg-orange-400 transition-all shadow-[0_0_15px_rgba(249,115,22,0.3)]">
-                  Simpan Produk
+                  Simpan
                 </button>
               </form>
             </motion.div>

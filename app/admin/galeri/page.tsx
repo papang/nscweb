@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Edit2, Trash2, X, PackageOpen, Globe, Zap, Satellite, MonitorCheck, ShieldCheck, Cpu, Wifi, Upload } from "lucide-react";
 import Swal from "sweetalert2";
+import { uploadFileAction } from "@/app/lib/upload_file";
+import Image from "next/image";
 
 const formatDateTime: Intl.DateTimeFormatOptions = {
   timeZone: "UTC",
@@ -107,6 +109,8 @@ export default function KelolaGaleriPage() {
   const [groupModalType, setGroupModalType] = useState<"add" | "edit">("add");
 
   const [products, setProducts] = useState<Gallery[]>([]);
+  const [selectedGallery, setSelectedGallery] = useState<Gallery | null>(null);
+  const [chgFileUpload, setChgFileUpload] = useState(false);
   const [isProdModalOpen, setIsProdModalOpen] = useState(false);
   const [prodModalType, setProdModalType] = useState<"add" | "edit">("add");
   const typegallery = ["video", "image"];
@@ -272,29 +276,33 @@ export default function KelolaGaleriPage() {
   }
 
 
-  const hndlSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const hndlSubmitData = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     let bodysend = {}
 
     if(prodModalType==="add") {
     
-      // if(chgFileUpload) {
+      if(chgFileUpload) {
 
-      //   const resUpload = await uploadFileAction(formData);
-      //   if (resUpload.success) {
-      //     bodysend = {
-      //       srcType: "IN", newsCatId: fieldNewsCatId, newsTitle: fieldNewsTitle, 
-      //       authorBy: fieldAuthor, newsContent: fieldContent, createdBy: fieldAuthor, 
-      //       imgUrl: resUpload.filepath, isPublished: fieldNewsStatus,
-      //       isHeadline: fieldIsHeadline,
-      //     };
-      //   } 
-      // } else {
+        const resUpload = await uploadFileAction(formData);
+        if (resUpload.success) {
+          bodysend = {
+              galTitle: formData.get("gal_title"), 
+              groupId: formData.get("group_id"), 
+              galType: formData.get("gal_type"), 
+              createdBy: "",
+              srcUrl: resUpload.filepath, 
+          };
+        } 
+      } else {
         bodysend = {
-          
+          galTitle: formData.get("gal_title"), 
+          groupId: formData.get("group_id"), 
+          galType: formData.get("gal_type"), 
+          createdBy: "",
         };
-      // }
+      }
       
 
       const response = await fetch("/api/gallery/ins", {
@@ -322,23 +330,29 @@ export default function KelolaGaleriPage() {
 
     if(prodModalType==="edit") {
             
-      // if(chgFileUpload) {
+      if(chgFileUpload) {
         
-      //   const resUpload = await uploadFileAction(formData);
-      //   if (resUpload.success) {
+        const resUpload = await uploadFileAction(formData);
+        if (resUpload.success) {
           
-      //     bodysend = {
-      //       srcType: "IN", newsId:selectedNews?.newsId, newsCatId: fieldNewsCatId, newsTitle: fieldNewsTitle, 
-      //       authorBy: fieldAuthor, newsContent: fieldContent, updatedBy: fieldAuthor, 
-      //       imgUrl: resUpload.filepath, isPublished: fieldNewsStatus,
-      //       isHeadline: fieldIsHeadline,
-      //     };
-      //   } 
-      // } else {
+          bodysend = {
+              galId: selectedGallery?.galId,
+              galTitle: formData.get("gal_title"), 
+              groupId: formData.get("group_id"), 
+              galType: formData.get("gal_type"), 
+              updatedBy: "",
+              srcUrl: resUpload.filepath, 
+          };
+        } 
+      } else {
         bodysend = {
-          
+          galId: selectedGallery?.galId,
+          galTitle: formData.get("gal_title"), 
+          groupId: formData.get("group_id"), 
+          galType: formData.get("gal_type"), 
+          updatedBy: "",
         };
-      // }
+      }
 
       const response = await fetch("/api/gallery/upd", {
         method: "POST",
@@ -426,6 +440,8 @@ export default function KelolaGaleriPage() {
           <button 
             onClick={() => { 
               setProdModalType("add"); 
+              setSelectedGallery(null);
+              setChgFileUpload(false);
               setImagePreview(null);
               setIsProdModalOpen(true); 
             }}
@@ -471,6 +487,8 @@ export default function KelolaGaleriPage() {
                       <button 
                         onClick={() => { 
                           setProdModalType("edit"); 
+                          setSelectedGallery(prod);
+                          setChgFileUpload(false);
                           // setSelectedIcon(prod.iconName);
                           setImagePreview(prod.srcUrl);
                           setIsProdModalOpen(true); 
@@ -546,12 +564,13 @@ export default function KelolaGaleriPage() {
               </div>
 
               {/* TODO (Backend): Integrasi POST/PUT Produk multipart/form-data untuk file gambar */}
-              <form className="space-y-6" onSubmit={hndlSubmit}>
+              <form className="space-y-6" onSubmit={hndlSubmitData}>
                 
                 <div>
                   <label className="block text-xs font-bold uppercase text-gray-400 mb-2">Deskripsi</label>
                   <input type="text" 
                     name="gal_title"
+                    defaultValue={selectedGallery?.galTitle}
                     className="w-full bg-black border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-orange-500" 
                     placeholder="Tulis deskripsi..." 
                     required></input>
@@ -562,6 +581,7 @@ export default function KelolaGaleriPage() {
                     <label className="block text-xs font-bold uppercase text-gray-400 mb-2">Kelompok</label>
                     <select 
                       name="group_id"
+                      defaultValue={selectedGallery?.groupId}
                       className="w-full bg-black border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-orange-500" 
                       required
                     >
@@ -570,11 +590,11 @@ export default function KelolaGaleriPage() {
                         groups.map((group) => (<option key={group?.groupId} value={group.groupId}>{group.groupName}</option>)
                       )}
                     </select>
-                  </div>
-                  <div>
+
                     <label className="block text-xs font-bold uppercase text-gray-400 mb-2">Tipe</label>
                     <select 
                       name="gal_type"
+                      defaultValue={selectedGallery?.galType}
                       className="w-full bg-black border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-orange-500" 
                       required
                     >
@@ -584,55 +604,61 @@ export default function KelolaGaleriPage() {
                       )}
                     </select>
                   </div>
+
+                  {/* --- DRAG & DROP IMAGE UPLOAD --- */}
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-gray-400 mb-2">Gambar/ Video Galeri (PNG, JPG, JPEG, MP4)</label>
+                    <div 
+                      onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                      onDragLeave={() => setIsDragging(false)}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        setIsDragging(false);
+                        const file = e.dataTransfer.files[0];
+                        // TODO (Backend): Simpan `file` ke state untuk dikirim ke API via FormData
+                        if (file && file.type.startsWith("image/")) {
+                          setImagePreview(URL.createObjectURL(file));
+                        }
+                      }}
+                      className={`relative flex flex-col items-center justify-center w-full h-70 border-2 border-dashed rounded-xl transition-all overflow-hidden bg-black
+                        ${isDragging ? 'border-orange-500 bg-orange-500/10' : 'border-white/10 hover:border-orange-500/50 cursor-pointer'}`}
+                    >
+                      {/* Input file disembunyikan tapi bisa di-klik di seluruh area div */}
+                      <input 
+                        type="file" name="file" 
+                        accept="image/png, image/jpeg, image/jpg" 
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
+                        onChange={(e) => {
+                          setChgFileUpload(true);
+                          const file = e.target.files?.[0];
+                          // TODO (Backend): Simpan `file` ke state
+                          if (file) setImagePreview(URL.createObjectURL(file));
+                        }}
+                      />
+                      
+                      {imagePreview ? (
+                        <>
+                          <Image src={imagePreview} alt="Preview" className="absolute inset-0 w-full h-full object-cover opacity-60" width={500} height={500} />
+                          <div className="absolute inset-0 flex items-center justify-center z-20">
+                            <span className="px-4 py-2 bg-black/80 rounded-lg text-xs font-bold text-white border border-white/20 pointer-events-none">
+                              Klik / Drag untuk Upload Gambar
+                            </span>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="flex flex-col items-center text-gray-500 pointer-events-none">
+                          <Upload size={32} className="mb-3 text-gray-400" />
+                          <span className="text-sm font-bold text-gray-300">Drag & Drop file ke sini</span>
+                          <span className="text-xs font-medium mt-1">atau klik untuk upload</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
 
-                {/* --- DRAG & DROP IMAGE UPLOAD --- */}
+                
                 <div>
-                  <label className="block text-xs font-bold uppercase text-gray-400 mb-2">Gambar Produk (PNG, JPG, JPEG)</label>
-                  <div 
-                    onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-                    onDragLeave={() => setIsDragging(false)}
-                    onDrop={(e) => {
-                      e.preventDefault();
-                      setIsDragging(false);
-                      const file = e.dataTransfer.files[0];
-                      // TODO (Backend): Simpan `file` ke state untuk dikirim ke API via FormData
-                      if (file && file.type.startsWith("image/")) {
-                        setImagePreview(URL.createObjectURL(file));
-                      }
-                    }}
-                    className={`relative flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-xl transition-all overflow-hidden bg-black
-                      ${isDragging ? 'border-orange-500 bg-orange-500/10' : 'border-white/10 hover:border-orange-500/50 cursor-pointer'}`}
-                  >
-                    {/* Input file disembunyikan tapi bisa di-klik di seluruh area div */}
-                    <input 
-                      type="file" 
-                      accept="image/png, image/jpeg, image/jpg" 
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        // TODO (Backend): Simpan `file` ke state
-                        if (file) setImagePreview(URL.createObjectURL(file));
-                      }}
-                    />
-                    
-                    {imagePreview ? (
-                      <>
-                        <img src={imagePreview} alt="Preview" className="absolute inset-0 w-full h-full object-cover opacity-60" />
-                        <div className="absolute inset-0 flex items-center justify-center z-20">
-                          <span className="px-4 py-2 bg-black/80 rounded-lg text-xs font-bold text-white border border-white/20 pointer-events-none">
-                            Klik / Drag untuk Upload Gambar
-                          </span>
-                        </div>
-                      </>
-                    ) : (
-                      <div className="flex flex-col items-center text-gray-500 pointer-events-none">
-                        <Upload size={32} className="mb-3 text-gray-400" />
-                        <span className="text-sm font-bold text-gray-300">Drag & Drop file ke sini</span>
-                        <span className="text-xs font-medium mt-1">atau klik untuk upload (PNG / JPG)</span>
-                      </div>
-                    )}
-                  </div>
+                  
                 </div>
 
                 <button type="submit" className="w-full py-4 rounded-xl bg-orange-500 text-black text-xs font-black uppercase tracking-widest hover:bg-orange-400 transition-all shadow-[0_0_15px_rgba(249,115,22,0.3)]">

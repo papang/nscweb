@@ -49,6 +49,21 @@ export const pJobType =p.pgTable("p_job_type", {
 });
 
 
+export const tJobs =p.pgTable("ctn_job_career", {
+    jobId: p.integer("job_id").primaryKey().default(sql`nextval('job_id_seq')`),
+    jobTitle: p.text("job_title").notNull(), 
+    category: p.text("job_cat"), 
+    typeId: p.text("job_type_id"), 
+    location: p.text("location"), 
+    jobDesc: p.text("job_desc"),
+    qualifications: p.text("qualifications").array(),
+    createdBy: p.text("created_by"),
+    createdAt: p.timestamp("created_at").defaultNow(),
+    updatedBy: p.text("updated_by"),
+    updatedAt: p.timestamp("updated_at").$onUpdate(() => new Date()),
+    isPublished: p.integer("ispublished").notNull().default(1),
+});
+
 
 // === GALERI === //
 

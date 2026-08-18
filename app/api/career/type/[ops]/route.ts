@@ -4,7 +4,7 @@ import { verifyToken } from "@/app/lib/auth";
 import http_headers from "@/app/lib/http_headers";
 
 import {db} from "@/app/lib/db/db";
-import {pJobType, tJobs } from "@/app/lib/db/schema";
+import {pJobType } from "@/app/lib/db/schema";
 import {sql, eq, ne, desc, and, asc} from "drizzle-orm";
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ ops: string }> }) {
@@ -33,16 +33,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const { ops } = await params;
   const req = await request.json();
   const { 
-    jobId,
-    jobTitle,
-    category,
     typeId,
-    location,
-    jobDesc,
-    qualifications,
-    createdBy,
-    updatedBy,
-    isPublished,
+    typeName,
+    description,
   } = req;
 
   try {
@@ -52,53 +45,29 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     let success = true;
     switch (ops) {
       case "list":
-        data = await db.select({
-          jobId: tJobs.jobId,
-          jobTitle: tJobs.jobTitle,
-          category: tJobs.category,
-          typeId: tJobs.typeId,
-          typeName: pJobType.typeName,
-          location: tJobs.location,
-          jobDesc: tJobs.jobDesc,
-          qualifications: tJobs.qualifications,
-          createdBy: tJobs.createdBy,
-          createdAt: tJobs.createdAt,
-          updatedBy: tJobs.updatedBy,
-          updatedAt: tJobs.updatedAt,
-        })
-        .from(tJobs)
-        .leftJoin(pJobType, eq(pJobType.typeId, tJobs.typeId))
-        .orderBy(desc(tJobs.createdAt));
+        data = await db.select()
+        .from(pJobType);
         break;
 
       case "ins":
-        data = await db.insert(tJobs).values({
-          jobTitle: jobTitle,
-          category: category,
-          typeId: typeId,
-          location: location,
-          jobDesc: jobDesc,
-          qualifications: qualifications,
-          createdBy: createdBy,
+        data = await db.insert(pJobType).values({
+          typeId: typeId, 
+          typeName: typeName,
+          description: "",
         }).returning();
         break;
 
       case "upd":
-        data = await db.update(tJobs).set({
-          jobTitle: jobTitle,
-          category: category,
-          typeId: typeId,
-          location: location,
-          jobDesc: jobDesc,
-          qualifications: qualifications,
-          createdBy: updatedBy,
-        }).where(eq(tJobs.jobId, parseInt(jobId, 10))).returning();
+        data = await db.update(pJobType).set({
+          typeName: typeName,
+          description: "",
+        }).where(eq(pJobType.typeId, parseInt(typeId, 10))).returning();
         break;
 
       case "del":
-        data = await db.delete(tJobs)
-          .where(eq(tJobs.jobId, parseInt(jobId, 10)))
-          .returning({jobId:tJobs.jobId});
+        data = await db.delete(pJobType)
+          .where(eq(pJobType.typeId, parseInt(typeId, 10)))
+          .returning({typeId:pJobType.typeId});
         break;
 
       default:
